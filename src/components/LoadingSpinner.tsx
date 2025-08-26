@@ -19,7 +19,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   return (
     <div
       className={cn(
-        'animate-spin rounded-full border-2 border-solid border-current border-r-transparent',
+        'animate-spin rounded-full border-2 border-solid border-muted-foreground/30 border-r-primary',
         sizeClasses[size],
         className
       )}
@@ -39,10 +39,10 @@ export const LoadingOverlay: React.FC<{
   if (!isLoading) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center gap-4 shadow-lg animate-scale-in">
         <LoadingSpinner size="lg" />
-        <p className="text-gray-700 font-medium">{message}</p>
+        <p className="text-card-foreground font-medium">{message}</p>
       </div>
     </div>
   );

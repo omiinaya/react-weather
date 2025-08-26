@@ -34,7 +34,7 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
       <WeatherCard title="Current Weather" isLoading>
         <div className="flex flex-col items-center justify-center py-12">
           <LoadingSpinner size="lg" />
-          <p className="mt-4 text-white/70">Loading weather data...</p>
+          <p className="mt-4 text-muted-foreground">Loading weather data...</p>
         </div>
       </WeatherCard>
     );
@@ -44,9 +44,13 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
     return (
       <WeatherCard title="Current Weather">
         <div className="text-center py-8">
-          <div className="text-red-300 mb-2">⚠️</div>
-          <p className="text-red-200">{error}</p>
-          <p className="text-white/70 text-sm mt-2">
+          <div className="text-destructive mb-3">
+            <div className="w-12 h-12 mx-auto bg-destructive/20 rounded-full flex items-center justify-center">
+              <span className="text-lg">⚠️</span>
+            </div>
+          </div>
+          <p className="text-destructive font-medium mb-2">{error}</p>
+          <p className="text-muted-foreground text-sm">
             Please try searching for another location.
           </p>
         </div>
@@ -58,8 +62,12 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
     return (
       <WeatherCard title="Current Weather">
         <div className="text-center py-8">
-          <div className="text-blue-300 mb-2">🌤️</div>
-          <p className="text-white/70">Search for a location to see current weather</p>
+          <div className="text-primary mb-3">
+            <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+              <span className="text-xl">🌤️</span>
+            </div>
+          </div>
+          <p className="text-muted-foreground">Search for a location to see current weather</p>
         </div>
       </WeatherCard>
     );
@@ -74,22 +82,24 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
     <WeatherCard title="Current Weather">
       {/* Location and Time */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-blue-300" />
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <MapPin className="w-5 h-5 text-primary" />
+          </div>
           <div>
-            <h2 className="text-xl font-bold text-white">{location.name}</h2>
-            <p className="text-white/80 text-sm">
+            <h2 className="text-xl font-bold text-card-foreground">{location.name}</h2>
+            <p className="text-muted-foreground text-sm">
               {location.region && `${location.region}, `}
               {location.country}
             </p>
           </div>
         </div>
         <div className="text-right">
-          <div className="flex items-center gap-1 text-white/70 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Clock className="w-4 h-4" />
             <span>{new Date(location.localtime).toLocaleTimeString()}</span>
           </div>
-          <p className="text-white/60 text-xs">
+          <p className="text-muted-foreground/70 text-xs">
             {new Date(location.localtime).toLocaleDateString()}
           </p>
         </div>
@@ -103,71 +113,73 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
             <img
               src={getWeatherIconUrl(current.condition.icon)}
               alt={current.condition.text}
-              className="w-16 h-16"
+              className="w-20 h-20 drop-shadow-lg"
             />
           </div>
-          <div className="text-4xl font-bold text-white mb-2">
+          <div className="text-5xl font-bold text-card-foreground mb-2">
             {formatTemperature(temp, temperatureUnit)}
           </div>
-          <p className="text-white/80 capitalize">{current.condition.text}</p>
-          <p className="text-white/60 text-sm">
+          <p className="text-card-foreground/80 capitalize text-lg font-medium">
+            {current.condition.text}
+          </p>
+          <p className="text-muted-foreground text-sm">
             Feels like {formatTemperature(feelsLike, temperatureUnit)}
           </p>
         </div>
 
         {/* Weather Details */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white/80">
-              <Droplets className="w-5 h-5 text-blue-300" />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Droplets className="w-5 h-5 text-blue-400" />
               <span>Humidity</span>
             </div>
-            <span className="text-white font-medium">{current.humidity}%</span>
+            <span className="font-semibold text-card-foreground">{current.humidity}%</span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white/80">
-              <Wind className="w-5 h-5 text-blue-300" />
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Wind className="w-5 h-5 text-green-400" />
               <span>Wind</span>
             </div>
-            <span className="text-white font-medium">
+            <span className="font-semibold text-card-foreground">
               {formatWindSpeed(windSpeed, windSpeedUnit)} {current.wind_dir}
             </span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white/80">
-              <Gauge className="w-5 h-5 text-blue-300" />
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Gauge className="w-5 h-5 text-purple-400" />
               <span>Pressure</span>
             </div>
-            <span className="text-white font-medium">
+            <span className="font-semibold text-card-foreground">
               {windSpeedUnit === 'metric' ? `${current.pressure_mb} mb` : `${current.pressure_in} in`}
             </span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white/80">
-              <Eye className="w-5 h-5 text-blue-300" />
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Eye className="w-5 h-5 text-amber-400" />
               <span>Visibility</span>
             </div>
-            <span className="text-white font-medium">
+            <span className="font-semibold text-card-foreground">
               {windSpeedUnit === 'metric' ? `${current.vis_km} km` : `${current.vis_miles} mi`}
             </span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white/80">
-              <Thermometer className="w-5 h-5 text-blue-300" />
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Thermometer className="w-5 h-5 text-red-400" />
               <span>UV Index</span>
             </div>
-            <span className="text-white font-medium">{current.uv}</span>
+            <span className="font-semibold text-card-foreground">{current.uv}</span>
           </div>
         </div>
       </div>
 
       {/* Additional Info */}
-      <div className="bg-white/5 rounded-lg p-4">
-        <p className="text-white/70 text-sm text-center">
+      <div className="bg-muted/30 rounded-lg p-4 border">
+        <p className="text-muted-foreground text-sm text-center">
           Last updated: {new Date(current.last_updated).toLocaleString()}
         </p>
       </div>

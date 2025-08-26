@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Calendar, CloudRain, Umbrella, Sun } from 'lucide-react';
+import { Calendar, CloudRain, Umbrella, Sun, Droplets } from 'lucide-react';
 import { WeatherCard, formatTemperature, formatDate, getWeatherIconUrl } from './WeatherCard';
 import { ForecastResponse } from '@/types/weather';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -26,7 +26,7 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
       <WeatherCard title="5-Day Forecast" isLoading>
         <div className="flex flex-col items-center justify-center py-12">
           <LoadingSpinner size="lg" />
-          <p className="mt-4 text-white/70">Loading forecast data...</p>
+          <p className="mt-4 text-muted-foreground">Loading forecast data...</p>
         </div>
       </WeatherCard>
     );
@@ -36,9 +36,13 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
     return (
       <WeatherCard title="5-Day Forecast">
         <div className="text-center py-8">
-          <div className="text-red-300 mb-2">⚠️</div>
-          <p className="text-red-200">{error}</p>
-          <p className="text-white/70 text-sm mt-2">
+          <div className="text-destructive mb-3">
+            <div className="w-12 h-12 mx-auto bg-destructive/20 rounded-full flex items-center justify-center">
+              <span className="text-lg">⚠️</span>
+            </div>
+          </div>
+          <p className="text-destructive font-medium mb-2">{error}</p>
+          <p className="text-muted-foreground text-sm">
             Please try searching for another location.
           </p>
         </div>
@@ -50,8 +54,12 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
     return (
       <WeatherCard title="5-Day Forecast">
         <div className="text-center py-8">
-          <div className="text-blue-300 mb-2">📅</div>
-          <p className="text-white/70">Search for a location to see weather forecast</p>
+          <div className="text-primary mb-3">
+            <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+              <span className="text-xl">📅</span>
+            </div>
+          </div>
+          <p className="text-muted-foreground">Search for a location to see weather forecast</p>
         </div>
       </WeatherCard>
     );
@@ -73,47 +81,47 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
             <div
               key={day.date}
               className={cn(
-                'bg-white/5 rounded-lg p-4 text-center',
-                'transition-all duration-200 hover:bg-white/10',
-                isToday && 'ring-2 ring-blue-400/50'
+                'weather-card p-4 text-center transition-all duration-300',
+                'hover:scale-105 hover:shadow-md',
+                isToday && 'ring-2 ring-primary/50 bg-primary/5'
               )}
             >
               {/* Date */}
-              <div className="mb-3">
-                <div className="flex items-center justify-center gap-1 text-white/70 text-sm mb-1">
+              <div className="mb-4">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm mb-2">
                   <Calendar className="w-4 h-4" />
-                  <span>{formatDate(day.date, { 
+                  <span>{formatDate(day.date, {
                     weekday: 'short',
                     month: 'short',
                     day: 'numeric'
                   })}</span>
                 </div>
                 {isToday && (
-                  <span className="text-blue-300 text-xs font-medium bg-blue-400/20 px-2 py-1 rounded-full">
+                  <span className="text-primary text-xs font-medium bg-primary/10 px-2 py-1 rounded-full">
                     Today
                   </span>
                 )}
               </div>
 
               {/* Weather Icon */}
-              <div className="mb-3">
+              <div className="mb-4">
                 <img
                   src={getWeatherIconUrl(day.day.condition.icon)}
                   alt={day.day.condition.text}
-                  className="w-12 h-12 mx-auto"
+                  className="w-14 h-14 mx-auto drop-shadow-sm"
                 />
-                <p className="text-white/80 text-xs capitalize mt-1">
+                <p className="text-card-foreground/80 text-xs capitalize mt-2">
                   {day.day.condition.text}
                 </p>
               </div>
 
               {/* Temperatures */}
-              <div className="mb-3">
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-white font-semibold text-lg">
+              <div className="mb-4">
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-card-foreground font-bold text-lg">
                     {formatTemperature(maxTemp, temperatureUnit)}
                   </span>
-                  <span className="text-white/60 text-sm">
+                  <span className="text-muted-foreground text-sm">
                     {formatTemperature(minTemp, temperatureUnit)}
                   </span>
                 </div>
@@ -121,15 +129,15 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
 
               {/* Precipitation */}
               {(chanceOfRain > 0 || chanceOfSnow > 0) && (
-                <div className="space-y-1">
+                <div className="space-y-2 mb-4">
                   {chanceOfRain > 0 && (
-                    <div className="flex items-center justify-center gap-1 text-blue-300 text-xs">
+                    <div className="flex items-center justify-center gap-2 text-blue-400 text-xs">
                       <CloudRain className="w-3 h-3" />
                       <span>{chanceOfRain}% rain</span>
                     </div>
                   )}
                   {chanceOfSnow > 0 && (
-                    <div className="flex items-center justify-center gap-1 text-blue-200 text-xs">
+                    <div className="flex items-center justify-center gap-2 text-blue-300 text-xs">
                       <Umbrella className="w-3 h-3" />
                       <span>{chanceOfSnow}% snow</span>
                     </div>
@@ -138,14 +146,15 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
               )}
 
               {/* Additional Info */}
-              <div className="mt-3 pt-3 border-t border-white/10">
-                <div className="grid grid-cols-2 gap-2 text-xs text-white/60">
+              <div className="mt-4 pt-4 border-t border-border/50">
+                <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1 justify-center">
                     <Sun className="w-3 h-3" />
                     <span>UV {day.day.uv}</span>
                   </div>
-                  <div>
-                    <span>Hum {day.day.avghumidity}%</span>
+                  <div className="flex items-center gap-1 justify-center">
+                    <Droplets className="w-3 h-3" />
+                    <span>{day.day.avghumidity}%</span>
                   </div>
                 </div>
               </div>
@@ -156,23 +165,24 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
 
       {/* Sunrise/Sunset for today */}
       {forecastDays[0] && (
-        <div className="mt-6 pt-4 border-t border-white/10">
-          <div className="grid grid-cols-2 gap-4 text-sm text-white/80">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <span>🌅</span>
-                <span>Sunrise</span>
+        <div className="mt-8 pt-6 border-t border-border/50">
+          <h4 className="text-sm font-medium text-card-foreground mb-4 text-center">Today's Sun</h4>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="text-center p-3 bg-muted/30 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2 text-amber-500">
+                <span className="text-lg">🌅</span>
+                <span className="text-card-foreground font-medium">Sunrise</span>
               </div>
-              <span className="text-white font-medium">
+              <span className="text-card-foreground font-semibold">
                 {forecastDays[0].astro.sunrise}
               </span>
             </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <span>🌇</span>
-                <span>Sunset</span>
+            <div className="text-center p-3 bg-muted/30 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2 text-orange-400">
+                <span className="text-lg">🌇</span>
+                <span className="text-card-foreground font-medium">Sunset</span>
               </div>
-              <span className="text-white font-medium">
+              <span className="text-card-foreground font-semibold">
                 {forecastDays[0].astro.sunset}
               </span>
             </div>

@@ -17,14 +17,17 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({
   return (
     <div
       className={cn(
-        'bg-white/10 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/20',
-        'transition-all duration-300 hover:shadow-xl hover:bg-white/15',
+        'weather-card p-6',
+        'animate-fade-in',
         isLoading && 'animate-pulse',
         className
       )}
     >
       {title && (
-        <h3 className="text-lg font-semibold text-white mb-4">{title}</h3>
+        <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
+          <div className="w-2 h-2 bg-primary rounded-full animate-weather-pulse"></div>
+          {title}
+        </h3>
       )}
       {children}
     </div>
