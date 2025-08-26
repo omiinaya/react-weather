@@ -1,0 +1,142 @@
+import axios from 'axios';
+import {
+  currentWeatherResponseSchema,
+  forecastResponseSchema,
+  weatherErrorSchema,
+  type CurrentWeatherResponse,
+  type ForecastResponse,
+} from '@/lib/validation/weather';
+
+const WEATHER_API_BASE_URL = 'https://api.weatherapi.com/v1';
+
+export class WeatherAPIError extends Error {
+  constructor(
+    public code: number,
+    message: string,
+    public originalError?: unknown
+  ) {
+    super(message);
+    this.name = 'WeatherAPIError';
+  }
+}
+
+export class WeatherAPIService {
+  private apiKey: string;
+
+  constructor() {
+    this.apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY || process.env.WEATHER_API_KEY || '';
+    if (!this.apiKey) {
+      throw new Error('WEATHER_API_KEY or NEXT_PUBLIC_WEATHER_API_KEY environment variable is required');
+    }
+  }
+
+  private async makeRequest<T>(
+    endpoint: string,
+    params: Record<string, string | number> = {}
+  ): Promise<T> {
+    try {
+      const url = `${WEATHER_API_BASE_URL}${endpoint}`;
+      const response = await axios.get(url, {
+        params: {
+          key: this.apiKey,
+          ...params,
+        },
+        timeout: 10000, // 10 second timeout
+      });
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.data) {
+          try {
+            const errorData = weatherErrorSchema.parse(error.response.data);
+            throw new WeatherAPIError(
+              errorData.error.code,
+              errorData.error.message,
+              error
+            );
+          } catch {
+            // If validation fails, use generic error
+            throw new WeatherAPIError(
+              error.response.status || 500,
+              error.response.statusText || 'Unknown API error',
+              error
+            );
+          }
+        }
+        throw new WeatherAPIError(
+          error.response?.status || 500,
+          error.message,
+          error
+        );
+      }
+      throw new WeatherAPIError(500, 'Network error', error);
+    }
+  }
+
+  async getCurrentWeather(location: string): Promise<CurrentWeatherResponse> {
+    const data = await this.makeRequest('/current.json', {
+      q: location,
+      aqi: 'no',
+    });
+
+    try {
+      return currentWeatherResponseSchema.parse(data);
+    } catch (error) {
+      throw new WeatherAPIError(
+        500,
+        'Invalid response format from weather API',
+        error
+      );
+    }
+  }
+
+  async getForecast(
+    location: string,
+    days: number = 5
+  ): Promise<ForecastResponse> {
+    if (days < 1 || days > 10) {
+      throw new WeatherAPIError(400, 'Days must be between 1 and 10');
+    }
+
+    const data = await this.makeRequest('/forecast.json', {
+      q: location,
+      days,
+      aqi: 'no',
+      alerts: 'no',
+    });
+
+    try {
+      return forecastResponseSchema.parse(data);
+    } catch (error) {
+      throw new WeatherAPIError(
+        500,
+        'Invalid response format from weather API',
+        error
+      );
+    }
+  }
+
+  async searchLocations(query: string): Promise<unknown> {
+    if (query.length < 2) {
+      return [];
+    }
+
+    const data = await this.makeRequest('/search.json', {
+      q: query,
+    });
+
+    // Note: WeatherAPI search endpoint returns an array of locations
+    return data;
+  }
+}
+
+// Create and export a function to get the service instance
+let weatherAPIServiceInstance: WeatherAPIService | null = null;
+
+export function getWeatherAPIService(): WeatherAPIService {
+  if (!weatherAPIServiceInstance) {
+    weatherAPIServiceInstance = new WeatherAPIService();
+  }
+  return weatherAPIServiceInstance;
+}
