@@ -16,7 +16,7 @@ export function Header() {
     )}>
       <div className="container flex h-16 items-center justify-between px-4 sm:px-6">
         {/* Logo and Brand */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className={cn(
             "flex items-center justify-center w-10 h-10 rounded-lg",
             "bg-primary text-primary-foreground",
@@ -31,7 +31,7 @@ export function Header() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex items-center gap-4 md:gap-6">
+        <nav className="flex items-center gap-3 md:gap-4">
           <Button
             variant="ghost"
             size="sm"
@@ -50,17 +50,9 @@ export function Header() {
           </Button>
         </nav>
 
-        {/* Theme Toggle and Actions */}
-        <div className="flex items-center gap-2">
+        {/* Theme Toggle */}
+        <div className="flex items-center ml-4">
           <ThemeToggle />
-          <Button
-            variant="outline"
-            size="sm"
-            className="hidden sm:flex items-center gap-2 px-3"
-          >
-            <Settings className="w-4 h-4" />
-            <span className="hidden lg:inline">Settings</span>
-          </Button>
         </div>
       </div>
     </header>
