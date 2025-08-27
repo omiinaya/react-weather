@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Calendar, CloudRain, Umbrella, Sun, Droplets } from 'lucide-react';
+import Image from 'next/image';
 import { WeatherCard, formatTemperature, formatDate, getWeatherIconUrl } from './WeatherCard';
 import { ForecastResponse } from '@/types/weather';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -105,10 +106,12 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
 
               {/* Weather Icon */}
               <div className="mb-4">
-                <img
+                <Image
                   src={getWeatherIconUrl(day.day.condition.icon)}
                   alt={day.day.condition.text}
-                  className="w-14 h-14 mx-auto drop-shadow-sm"
+                  width={56}
+                  height={56}
+                  className="mx-auto drop-shadow-sm"
                 />
                 <p className="text-card-foreground/80 text-xs capitalize mt-2">
                   {day.day.condition.text}
@@ -166,7 +169,7 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
       {/* Sunrise/Sunset for today */}
       {forecastDays[0] && (
         <div className="mt-8 pt-6 border-t border-border/50">
-          <h4 className="text-sm font-medium text-card-foreground mb-4 text-center">Today's Sun</h4>
+          <h4 className="text-sm font-medium text-card-foreground mb-4 text-center">Today&apos;s Sun</h4>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="text-center p-3 bg-muted/30 rounded-lg">
               <div className="flex items-center justify-center gap-2 mb-2 text-amber-500">

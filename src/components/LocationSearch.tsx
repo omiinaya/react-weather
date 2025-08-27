@@ -5,6 +5,7 @@ import { Search, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { LoadingSpinner } from './LoadingSpinner';
 import { getWeatherAPIService } from '@/lib/api/weather-api';
+import { SearchLocation } from '@/types/weather';
 
 interface LocationSuggestion {
   id: number;
@@ -49,7 +50,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
       
       // WeatherAPI search returns an array of locations
       if (Array.isArray(results)) {
-        const locationSuggestions: LocationSuggestion[] = results.map((location: any, index) => ({
+        const locationSuggestions: LocationSuggestion[] = results.map((location: SearchLocation, index) => ({
           id: index,
           name: location.name,
           region: location.region,

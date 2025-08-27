@@ -1,15 +1,16 @@
 'use client';
 
 import React from 'react';
-import { 
-  Droplets, 
-  Wind, 
-  Gauge, 
-  Eye, 
+import {
+  Droplets,
+  Wind,
+  Gauge,
+  Eye,
   Thermometer,
   MapPin,
   Clock
 } from 'lucide-react';
+import Image from 'next/image';
 import { WeatherCard, formatTemperature, formatWindSpeed, getWeatherIconUrl } from './WeatherCard';
 import { CurrentWeatherResponse } from '@/types/weather';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -106,73 +107,72 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
       </div>
 
       {/* Main Weather Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Temperature and Condition */}
-        <div className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            <img
-              src={getWeatherIconUrl(current.condition.icon)}
-              alt={current.condition.text}
-              className="w-20 h-20 drop-shadow-lg"
-            />
-          </div>
-          <div className="text-5xl font-bold text-card-foreground mb-2">
-            {formatTemperature(temp, temperatureUnit)}
-          </div>
-          <p className="text-card-foreground/80 capitalize text-lg font-medium">
-            {current.condition.text}
-          </p>
-          <p className="text-muted-foreground text-sm">
-            Feels like {formatTemperature(feelsLike, temperatureUnit)}
-          </p>
+      <div className="text-center mb-6">
+        <div className="flex items-center justify-center mb-4">
+          <Image
+            src={getWeatherIconUrl(current.condition.icon)}
+            alt={current.condition.text}
+            width={80}
+            height={80}
+            className="drop-shadow-lg"
+          />
         </div>
+        <div className="text-5xl font-bold text-card-foreground mb-2">
+          {formatTemperature(temp, temperatureUnit)}
+        </div>
+        <p className="text-card-foreground/80 capitalize text-lg font-medium">
+          {current.condition.text}
+        </p>
+        <p className="text-muted-foreground text-sm">
+          Feels like {formatTemperature(feelsLike, temperatureUnit)}
+        </p>
+      </div>
 
-        {/* Weather Details */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-3 text-muted-foreground">
-              <Droplets className="w-5 h-5 text-blue-400" />
-              <span>Humidity</span>
-            </div>
-            <span className="font-semibold text-card-foreground">{current.humidity}%</span>
+      {/* Weather Metrics Buttons */}
+      <div className="flex flex-wrap gap-3 mb-4 justify-center">
+        <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-muted/40 rounded-xl border border-border/50 hover:bg-muted/60 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[100px] sm:min-w-[120px]">
+          <Droplets className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Humidity</span>
+            <span className="text-sm font-semibold text-card-foreground">{current.humidity}%</span>
           </div>
-
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-3 text-muted-foreground">
-              <Wind className="w-5 h-5 text-green-400" />
-              <span>Wind</span>
-            </div>
-            <span className="font-semibold text-card-foreground">
-              {formatWindSpeed(windSpeed, windSpeedUnit)} {current.wind_dir}
+        </div>
+        
+        <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-muted/40 rounded-xl border border-border/50 hover:bg-muted/60 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[100px] sm:min-w-[120px]">
+          <Wind className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Wind</span>
+            <span className="text-sm font-semibold text-card-foreground">
+              {formatWindSpeed(windSpeed, windSpeedUnit)}
             </span>
           </div>
-
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-3 text-muted-foreground">
-              <Gauge className="w-5 h-5 text-purple-400" />
-              <span>Pressure</span>
-            </div>
-            <span className="font-semibold text-card-foreground">
+        </div>
+        
+        <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-muted/40 rounded-xl border border-border/50 hover:bg-muted/60 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[100px] sm:min-w-[120px]">
+          <Gauge className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500" />
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Pressure</span>
+            <span className="text-sm font-semibold text-card-foreground">
               {windSpeedUnit === 'metric' ? `${current.pressure_mb} mb` : `${current.pressure_in} in`}
             </span>
           </div>
-
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-3 text-muted-foreground">
-              <Eye className="w-5 h-5 text-amber-400" />
-              <span>Visibility</span>
-            </div>
-            <span className="font-semibold text-card-foreground">
+        </div>
+        
+        <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-muted/40 rounded-xl border border-border/50 hover:bg-muted/60 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[100px] sm:min-w-[120px]">
+          <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" />
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">Visibility</span>
+            <span className="text-sm font-semibold text-card-foreground">
               {windSpeedUnit === 'metric' ? `${current.vis_km} km` : `${current.vis_miles} mi`}
             </span>
           </div>
-
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-3 text-muted-foreground">
-              <Thermometer className="w-5 h-5 text-red-400" />
-              <span>UV Index</span>
-            </div>
-            <span className="font-semibold text-card-foreground">{current.uv}</span>
+        </div>
+        
+        <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-muted/40 rounded-xl border border-border/50 hover:bg-muted/60 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[100px] sm:min-w-[120px]">
+          <Thermometer className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">UV Index</span>
+            <span className="text-sm font-semibold text-card-foreground">{current.uv}</span>
           </div>
         </div>
       </div>

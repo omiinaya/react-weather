@@ -8,15 +8,13 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
 export function Header() {
-  const { theme } = useTheme();
-
   return (
     <header className={cn(
       "sticky top-0 z-40 w-full border-b",
       "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
       "transition-all duration-300"
     )}>
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between px-4 sm:px-6">
         {/* Logo and Brand */}
         <div className="flex items-center gap-3">
           <div className={cn(
@@ -26,29 +24,29 @@ export function Header() {
           )}>
             <Cloud className="w-6 h-6" />
           </div>
-          <div className="hidden sm:flex flex-col">
+          <div className="flex flex-col">
             <h1 className="text-xl font-bold text-foreground">Weather App</h1>
-            <p className="text-sm text-muted-foreground">Real-time forecasts</p>
+            <p className="text-sm text-muted-foreground hidden sm:block">Real-time forecasts</p>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="flex items-center gap-4 md:gap-6">
           <Button
             variant="ghost"
             size="sm"
-            className="text-foreground/80 hover:text-foreground hover:bg-accent"
+            className="text-foreground/80 hover:text-foreground hover:bg-accent px-3"
           >
             <MapPin className="w-4 h-4 mr-2" />
-            Locations
+            <span className="hidden md:inline">Locations</span>
           </Button>
           <Button
             variant="ghost"
             size="sm"
-            className="text-foreground/80 hover:text-foreground hover:bg-accent"
+            className="text-foreground/80 hover:text-foreground hover:bg-accent px-3"
           >
             <Settings className="w-4 h-4 mr-2" />
-            Settings
+            <span className="hidden md:inline">Settings</span>
           </Button>
         </nav>
 
@@ -58,7 +56,7 @@ export function Header() {
           <Button
             variant="outline"
             size="sm"
-            className="hidden sm:flex items-center gap-2"
+            className="hidden sm:flex items-center gap-2 px-3"
           >
             <Settings className="w-4 h-4" />
             <span className="hidden lg:inline">Settings</span>
