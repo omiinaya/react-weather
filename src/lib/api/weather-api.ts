@@ -74,9 +74,10 @@ export class WeatherAPIService {
     }
   }
 
-  async getCurrentWeather(location: string): Promise<CurrentWeatherResponse> {
+  async getCurrentWeather(location: string | { lat: number; lon: number }): Promise<CurrentWeatherResponse> {
+    const query = typeof location === 'string' ? location : `${location.lat},${location.lon}`;
     const data = await this.makeRequest('/current.json', {
-      q: location,
+      q: query,
       aqi: 'no',
     });
 
@@ -92,15 +93,16 @@ export class WeatherAPIService {
   }
 
   async getForecast(
-    location: string,
+    location: string | { lat: number; lon: number },
     days: number = 5
   ): Promise<ForecastResponse> {
     if (days < 1 || days > 10) {
       throw new WeatherAPIError(400, 'Days must be between 1 and 10');
     }
 
+    const query = typeof location === 'string' ? location : `${location.lat},${location.lon}`;
     const data = await this.makeRequest('/forecast.json', {
-      q: location,
+      q: query,
       days,
       aqi: 'no',
       alerts: 'no',

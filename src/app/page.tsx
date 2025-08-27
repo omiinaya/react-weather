@@ -12,9 +12,11 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Astro } from '@/types/weather';
 
 export default function Home() {
-  const [location, setLocation] = useState<string>('');
+  const [location, setLocation] = useState<string>('New York');
   const [temperatureUnit, setTemperatureUnit] = useState<'celsius' | 'fahrenheit'>('celsius');
   const [windSpeedUnit, setWindSpeedUnit] = useState<'metric' | 'imperial'>('metric');
+  const [timeFormat, setTimeFormat] = useState<'12hr' | '24hr'>('12hr');
+  const [pressureUnit, setPressureUnit] = useState<'mb' | 'inHg'>('mb');
   const { theme } = useTheme();
 
   // Fetch current weather data
@@ -62,6 +64,14 @@ export default function Home() {
     setWindSpeedUnit(prev => prev === 'metric' ? 'imperial' : 'metric');
   }, []);
 
+  const toggleTimeFormat = useCallback(() => {
+    setTimeFormat(prev => prev === '12hr' ? '24hr' : '12hr');
+  }, []);
+
+  const togglePressureUnit = useCallback(() => {
+    setPressureUnit(prev => prev === 'mb' ? 'inHg' : 'mb');
+  }, []);
+
   const getErrorMessage = (error: unknown): string | null => {
     console.log('getErrorMessage called with:', error);
     if (error instanceof WeatherAPIError) {
@@ -75,6 +85,7 @@ export default function Home() {
     console.log('Unknown error type, returning generic message');
     return 'An unexpected error occurred';
   };
+
 
   const currentError = currentWeatherError ? getErrorMessage(currentWeatherError) : null;
   const forecastError = forecastErrorResponse ? getErrorMessage(forecastErrorResponse) : null;
@@ -106,11 +117,11 @@ export default function Home() {
           <div className="flex flex-col items-center mb-6 sm:mb-8 animate-slide-up">
             <div className="w-full max-w-md mb-4">
               <LocationSearch
-                onLocationSelect={handleLocationSelect}
-                isLoading={isLoading}
-                className="w-full"
-                placeholder="Enter city name (e.g., New York, London, Tokyo)..."
-              />
+               onLocationSelect={handleLocationSelect}
+               isLoading={isLoading}
+               className="w-full"
+               placeholder="Enter city name (e.g., New York, London, Tokyo)..."
+             />
             </div>
             
             {/* Unit Toggles - Smaller and More Compact */}
@@ -141,6 +152,32 @@ export default function Home() {
               >
                 {windSpeedUnit === 'metric' ? 'km/h' : 'mph'}
               </button>
+              <button
+                onClick={toggleTimeFormat}
+                className={`
+                  px-4 py-2 rounded-lg border transition-all duration-200 font-medium text-sm
+                  hover:scale-105 hover:shadow-md
+                  ${theme === 'dark'
+                    ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
+                    : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
+                  }
+                `}
+              >
+                {timeFormat === '12hr' ? '12hr' : '24hr'}
+              </button>
+              <button
+                onClick={togglePressureUnit}
+                className={`
+                  px-4 py-2 rounded-lg border transition-all duration-200 font-medium text-sm
+                  hover:scale-105 hover:shadow-md
+                  ${theme === 'dark'
+                    ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
+                    : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
+                  }
+                `}
+              >
+                {pressureUnit === 'mb' ? 'mb' : 'inHg'}
+              </button>
             </div>
           </div>
 
@@ -162,8 +199,8 @@ export default function Home() {
                     <span className="text-sm">⚠️</span>
                   </div>
                   <p className="text-sm font-medium">
-                    {currentError || forecastError || 'Unknown error'}
-                  </p>
+                   {currentError || forecastError || 'Unknown error'}
+                 </p>
                 </div>
                 <button
                   onClick={handleRetry}
@@ -192,6 +229,8 @@ export default function Home() {
                 error={currentError}
                 temperatureUnit={temperatureUnit}
                 windSpeedUnit={windSpeedUnit}
+                timeFormat={timeFormat}
+                pressureUnit={pressureUnit}
                 sunData={sunData}
               />
             </div>

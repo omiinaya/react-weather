@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
 import { WeatherCard, formatTemperature, formatWindSpeed } from './WeatherCard';
 import { CurrentWeatherResponse, Astro } from '@/types/weather';
+import type { CurrentWeather as CurrentWeatherType } from '@/types/weather';
 import { LoadingSpinner } from './LoadingSpinner';
 import { getWeatherIcon, extractConditionCode, isNightTime } from '@/lib/utils/weather-icons';
 
@@ -24,6 +25,8 @@ interface CurrentWeatherProps {
   error?: string | null;
   temperatureUnit?: 'celsius' | 'fahrenheit';
   windSpeedUnit?: 'metric' | 'imperial';
+  timeFormat?: '12hr' | '24hr';
+  pressureUnit?: 'mb' | 'inHg';
   sunData?: Astro | null;
 }
 
@@ -33,6 +36,8 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
   error = null,
   temperatureUnit = 'celsius',
   windSpeedUnit = 'metric',
+  timeFormat = '12hr',
+  pressureUnit = 'mb',
   sunData = null,
 }) => {
   if (isLoading) {
@@ -152,15 +157,15 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
           )}
 
           {/* Time Info */}
-          <div className="text-right flex-shrink-0 hidden sm:block">
-            <div className="flex items-center gap-1 text-muted-foreground text-xs justify-end">
-              <Clock className="w-3 h-3" />
-              <span>{new Date(location.localtime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-            <p className="text-muted-foreground/70 text-xs">
-              {new Date(location.localtime).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-            </p>
-          </div>
+         <div className="text-right flex-shrink-0 hidden sm:block">
+           <div className="flex items-center gap-1 text-muted-foreground text-xs justify-end">
+             <Clock className="w-3 h-3" />
+             <span>{formatTime(location.localtime, timeFormat)}</span>
+           </div>
+           <p className="text-muted-foreground/70 text-xs">
+             {new Date(location.localtime).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+           </p>
+         </div>
         </div>
       </div>
 
@@ -189,7 +194,7 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
           <div className="min-w-0">
             <span className="text-xs text-muted-foreground block">Pressure</span>
             <span className="text-sm font-semibold text-card-foreground">
-              {windSpeedUnit === 'metric' ? `${current.pressure_mb} mb` : `${current.pressure_in} in`}
+              {formatPressure(current, pressureUnit)}
             </span>
           </div>
         </div>
@@ -213,17 +218,33 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
         </div>
 
         {/* Last Updated - Mobile visible, desktop in grid */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-lg border border-border/50 col-span-2 sm:col-span-1">
-          <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          <div className="min-w-0">
-            <span className="text-xs text-muted-foreground block">Updated</span>
-            <span className="text-sm font-semibold text-card-foreground">
-              {new Date(current.last_updated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          </div>
-        </div>
+       <div className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-lg border border-border/50 col-span-2 sm:col-span-1">
+         <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+         <div className="min-w-0">
+           <span className="text-xs text-muted-foreground block">Updated</span>
+           <span className="text-sm font-semibold text-card-foreground">
+             {formatTime(current.last_updated, timeFormat)}
+           </span>
+         </div>
+       </div>
       </div>
 
     </WeatherCard>
   );
+};
+
+// Utility function to format time based on 12hr/24hr preference
+const formatTime = (dateString: string, format: '12hr' | '24hr' = '12hr'): string => {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: format === '12hr'
+  };
+  return date.toLocaleTimeString([], options);
+};
+
+// Utility function to format pressure based on unit preference
+const formatPressure = (current: CurrentWeatherType, unit: 'mb' | 'inHg' = 'mb'): string => {
+  return unit === 'mb' ? `${current.pressure_mb} mb` : `${current.pressure_in} inHg`;
 };
