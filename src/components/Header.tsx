@@ -34,28 +34,7 @@ export function Header() {
 
         {/* Navigation - Centered */}
         <nav className="flex items-center gap-2 md:gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "text-foreground/80 hover:text-foreground hover:bg-accent",
-              "px-2 md:px-3 h-8 transition-all duration-200"
-            )}
-          >
-            <MapPin className="w-4 h-4 md:mr-2" />
-            <span className="hidden md:inline text-sm">Locations</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "text-foreground/80 hover:text-foreground hover:bg-accent",
-              "px-2 md:px-3 h-8 transition-all duration-200"
-            )}
-          >
-            <Settings className="w-4 h-4 md:mr-2" />
-            <span className="hidden md:inline text-sm">Settings</span>
-          </Button>
+         
         </nav>
 
         {/* Spacer to balance layout */}

@@ -11,6 +11,7 @@ import {
   Clock
 } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
 import { WeatherCard, formatTemperature, formatWindSpeed } from './WeatherCard';
 import { CurrentWeatherResponse, Astro } from '@/types/weather';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -126,14 +127,26 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
 
           {/* Sun Times - Integrated between temperature and date */}
           {sunData && (
-            <div className="flex flex-col items-center gap-1 text-center flex-shrink-0 hidden sm:flex">
-              <div className="flex items-center gap-2">
-                <span className="text-amber-500 text-sm">🌅</span>
-                <span className="text-xs font-medium text-card-foreground">{sunData.sunrise}</span>
+            <div className="flex items-center gap-4 text-center flex-shrink-0 hidden sm:flex">
+              {/* Sunrise Section */}
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs font-medium text-muted-foreground">Sunrise</span>
+                <div className="flex items-center gap-1">
+                  <FontAwesomeIcon icon={faSun} className="w-4 h-4 text-amber-500" />
+                  <span className="text-sm font-semibold text-card-foreground">{sunData.sunrise}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-orange-400 text-sm">🌇</span>
-                <span className="text-xs font-medium text-card-foreground">{sunData.sunset}</span>
+              
+              {/* Divider */}
+              <div className="w-px h-6 bg-border/50"></div>
+              
+              {/* Sunset Section */}
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs font-medium text-muted-foreground">Sunset</span>
+                <div className="flex items-center gap-1">
+                  <FontAwesomeIcon icon={faMoon} className="w-4 h-4 text-orange-400" />
+                  <span className="text-sm font-semibold text-card-foreground">{sunData.sunset}</span>
+                </div>
               </div>
             </div>
           )}
