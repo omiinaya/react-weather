@@ -89,7 +89,7 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
               )}
             >
               {/* Date */}
-              <div className="mb-4">
+              <div className="mb-4 min-h-[52px] flex flex-col items-center justify-center">
                 <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm mb-2">
                   <Calendar className="w-4 h-4" />
                   <span>{formatDate(day.date, {
@@ -98,10 +98,12 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
                     day: 'numeric'
                   })}</span>
                 </div>
-                {isToday && (
+                {isToday ? (
                   <span className="text-primary text-xs font-medium bg-primary/10 px-2 py-1 rounded-full">
                     Today
                   </span>
+                ) : (
+                  <span className="invisible text-xs px-2 py-1">Placeholder</span>
                 )}
               </div>
 
