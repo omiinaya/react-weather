@@ -166,33 +166,6 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
           );
         })}
       </div>
-
-      {/* Sunrise/Sunset for today */}
-      {forecastDays[0] && (
-        <div className="mt-8 pt-6 border-t border-border/50">
-          <h4 className="text-sm font-medium text-card-foreground mb-4 text-center">Today&apos;s Sun</h4>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="text-center p-3 bg-muted/30 rounded-lg">
-              <div className="flex items-center justify-center gap-2 mb-2 text-amber-500">
-                <span className="text-lg">🌅</span>
-                <span className="text-card-foreground font-medium">Sunrise</span>
-              </div>
-              <span className="text-card-foreground font-semibold">
-                {forecastDays[0].astro.sunrise}
-              </span>
-            </div>
-            <div className="text-center p-3 bg-muted/30 rounded-lg">
-              <div className="flex items-center justify-center gap-2 mb-2 text-orange-400">
-                <span className="text-lg">🌇</span>
-                <span className="text-card-foreground font-medium">Sunset</span>
-              </div>
-              <span className="text-card-foreground font-semibold">
-                {forecastDays[0].astro.sunset}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
     </WeatherCard>
   );
 };

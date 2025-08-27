@@ -9,6 +9,7 @@ import { LoadingOverlay } from '@/components/LoadingSpinner';
 import { Header } from '@/components/Header';
 import { getWeatherAPIService, WeatherAPIError } from '@/lib/api/weather-api';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Astro } from '@/types/weather';
 
 export default function Home() {
   const [location, setLocation] = useState<string>('');
@@ -80,6 +81,9 @@ export default function Home() {
 
   const isLoading = isCurrentWeatherLoading || isForecastLoading;
   const hasError = currentError || forecastError;
+
+  // Extract today's astro data from forecast
+  const sunData: Astro | null = forecastData?.forecast?.forecastday?.[0]?.astro || null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -188,6 +192,7 @@ export default function Home() {
                 error={currentError}
                 temperatureUnit={temperatureUnit}
                 windSpeedUnit={windSpeedUnit}
+                sunData={sunData}
               />
             </div>
 

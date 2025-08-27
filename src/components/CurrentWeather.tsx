@@ -12,9 +12,10 @@ import {
 } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { WeatherCard, formatTemperature, formatWindSpeed } from './WeatherCard';
-import { CurrentWeatherResponse } from '@/types/weather';
+import { CurrentWeatherResponse, Astro } from '@/types/weather';
 import { LoadingSpinner } from './LoadingSpinner';
 import { getWeatherIcon, extractConditionCode, isNightTime } from '@/lib/utils/weather-icons';
+
 
 interface CurrentWeatherProps {
   data: CurrentWeatherResponse | null;
@@ -22,6 +23,7 @@ interface CurrentWeatherProps {
   error?: string | null;
   temperatureUnit?: 'celsius' | 'fahrenheit';
   windSpeedUnit?: 'metric' | 'imperial';
+  sunData?: Astro | null;
 }
 
 export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
@@ -30,6 +32,7 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
   error = null,
   temperatureUnit = 'celsius',
   windSpeedUnit = 'metric',
+  sunData = null,
 }) => {
   if (isLoading) {
     return (
@@ -121,6 +124,20 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
             </div>
           </div>
 
+          {/* Sun Times - Integrated between temperature and date */}
+          {sunData && (
+            <div className="flex flex-col items-center gap-1 text-center flex-shrink-0 hidden sm:flex">
+              <div className="flex items-center gap-2">
+                <span className="text-amber-500 text-sm">🌅</span>
+                <span className="text-xs font-medium text-card-foreground">{sunData.sunrise}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-orange-400 text-sm">🌇</span>
+                <span className="text-xs font-medium text-card-foreground">{sunData.sunset}</span>
+              </div>
+            </div>
+          )}
+
           {/* Time Info */}
           <div className="text-right flex-shrink-0 hidden sm:block">
             <div className="flex items-center gap-1 text-muted-foreground text-xs justify-end">
@@ -193,6 +210,7 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
           </div>
         </div>
       </div>
+
     </WeatherCard>
   );
 };
