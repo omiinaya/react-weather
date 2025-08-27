@@ -86,48 +86,36 @@ export default function Home() {
       <Header />
       <LoadingOverlay isLoading={isLoading} />
       
-      <main className="container mx-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto">
-          {/* Hero Section */}
-          <div className="text-center mb-10 animate-fade-in">
-            <div className="flex flex-col items-center mb-8">
-              <div className={`
-                w-24 h-24 rounded-full flex items-center justify-center mb-6
-                ${theme === 'dark'
-                  ? 'bg-weather-gradient text-primary-foreground shadow-lg'
-                  : 'weather-sunny text-primary-foreground shadow-lg'
-                }
-                transition-all duration-500
-              `}>
-                <svg className="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12,17.5A5.5,5.5 0 0,1 6.5,12A5.5,5.5 0 0,1 12,6.5A5.5,5.5 0 0,1 17.5,12A5.5,5.5 0 0,1 12,17.5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
-                </svg>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                Weather Forecast
-              </h1>
-              <p className="text-lg text-muted-foreground max-w-md leading-relaxed">
-                Get accurate weather information for any location worldwide
-              </p>
-            </div>
+      <main className="container mx-auto px-4 py-4 sm:py-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Hero Section - More Compact */}
+          <div className="text-center mb-6 sm:mb-8 animate-fade-in">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-3 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              Weather Forecast
+            </h1>
+            <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">
+              Get real-time weather updates and forecasts for any location worldwide
+            </p>
           </div>
 
-          {/* Search Section */}
-          <div className="flex flex-col items-center mb-10 animate-slide-up">
-            <LocationSearch
-              onLocationSelect={handleLocationSelect}
-              isLoading={isLoading}
-              className="mb-8 w-full max-w-md"
-              placeholder="Enter city name (e.g., New York, London, Tokyo)..."
-            />
+          {/* Search Section - More Compact */}
+          <div className="flex flex-col items-center mb-6 sm:mb-8 animate-slide-up">
+            <div className="w-full max-w-md mb-4">
+              <LocationSearch
+                onLocationSelect={handleLocationSelect}
+                isLoading={isLoading}
+                className="w-full"
+                placeholder="Enter city name (e.g., New York, London, Tokyo)..."
+              />
+            </div>
             
-            {/* Unit Toggles */}
-            <div className="flex gap-4">
+            {/* Unit Toggles - Smaller and More Compact */}
+            <div className="flex gap-3">
               <button
                 onClick={toggleTemperatureUnit}
                 className={`
-                  px-5 py-3 rounded-xl border-2 transition-all duration-200 font-medium
-                  hover:scale-105 hover:shadow-lg
+                  px-4 py-2 rounded-lg border transition-all duration-200 font-medium text-sm
+                  hover:scale-105 hover:shadow-md
                   ${theme === 'dark'
                     ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
                     : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
@@ -139,8 +127,8 @@ export default function Home() {
               <button
                 onClick={toggleWindSpeedUnit}
                 className={`
-                  px-5 py-3 rounded-xl border-2 transition-all duration-200 font-medium
-                  hover:scale-105 hover:shadow-lg
+                  px-4 py-2 rounded-lg border transition-all duration-200 font-medium text-sm
+                  hover:scale-105 hover:shadow-md
                   ${theme === 'dark'
                     ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
                     : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
@@ -152,31 +140,31 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Error Banner */}
+          {/* Error Banner - More Compact */}
           {hasError && (
             <div className={`
-              rounded-xl p-6 mb-10 border-2 transition-all duration-300 animate-scale-in
+              rounded-lg p-4 mb-6 border transition-all duration-300 animate-scale-in
               ${theme === 'dark'
                 ? 'bg-destructive/20 border-destructive/40 text-destructive-foreground shadow-lg'
                 : 'bg-destructive/15 border-destructive/30 text-destructive shadow-lg'
               }
             `}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <div className={`
-                    w-8 h-8 rounded-full flex items-center justify-center
+                    w-6 h-6 rounded-full flex items-center justify-center
                     ${theme === 'dark' ? 'bg-destructive/40' : 'bg-destructive/30'}
                   `}>
-                    <span className="text-base">⚠️</span>
+                    <span className="text-sm">⚠️</span>
                   </div>
-                  <p className="text-base font-medium">
+                  <p className="text-sm font-medium">
                     {currentError || forecastError || 'Unknown error'}
                   </p>
                 </div>
                 <button
                   onClick={handleRetry}
                   className={`
-                    px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                    px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200
                     hover:scale-105 hover:shadow-md
                     ${theme === 'dark'
                       ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80'
@@ -190,9 +178,9 @@ export default function Home() {
             </div>
           )}
 
-          {/* Weather Content */}
-          <div className="flex flex-col gap-8">
-            {/* Current Weather - Full Width */}
+          {/* Weather Content - Improved Spacing */}
+          <div className="space-y-6">
+            {/* Current Weather */}
             <div className="w-full">
               <CurrentWeather
                 data={currentWeatherData || null}
@@ -203,7 +191,7 @@ export default function Home() {
               />
             </div>
 
-            {/* Forecast - Full Width */}
+            {/* Forecast */}
             <div className="w-full">
               <WeatherForecast
                 data={forecastData || null}
@@ -215,12 +203,12 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="mt-16 text-center animate-fade-in">
-            <p className="text-muted-foreground text-sm">
+          {/* Footer - More Compact */}
+          <div className="mt-12 text-center animate-fade-in">
+            <p className="text-muted-foreground text-xs sm:text-sm">
               Built with Next.js, TypeScript, and Tailwind CSS
             </p>
-            <p className="text-muted-foreground/70 text-xs mt-2">
+            <p className="text-muted-foreground/70 text-xs mt-1">
               Weather data provided by WeatherAPI.com
             </p>
           </div>

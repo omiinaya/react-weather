@@ -10,10 +10,11 @@ import {
   MapPin,
   Clock
 } from 'lucide-react';
-import Image from 'next/image';
-import { WeatherCard, formatTemperature, formatWindSpeed, getWeatherIconUrl } from './WeatherCard';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { WeatherCard, formatTemperature, formatWindSpeed } from './WeatherCard';
 import { CurrentWeatherResponse } from '@/types/weather';
 import { LoadingSpinner } from './LoadingSpinner';
+import { getWeatherIcon, extractConditionCode, isNightTime } from '@/lib/utils/weather-icons';
 
 interface CurrentWeatherProps {
   data: CurrentWeatherResponse | null;
@@ -81,107 +82,116 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
 
   return (
     <WeatherCard title="Current Weather">
-      {/* Location and Time */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <MapPin className="w-5 h-5 text-primary" />
+      {/* Compact Header with Location and Main Weather */}
+      <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-6">
+        {/* Location Info */}
+        <div className="flex items-center gap-3 flex-1">
+          <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+            <MapPin className="w-4 h-4 text-primary" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-card-foreground">{location.name}</h2>
-            <p className="text-muted-foreground text-sm">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg font-bold text-card-foreground truncate">{location.name}</h2>
+            <p className="text-muted-foreground text-xs truncate">
               {location.region && `${location.region}, `}
               {location.country}
             </p>
           </div>
         </div>
-        <div className="text-right">
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <Clock className="w-4 h-4" />
-            <span>{new Date(location.localtime).toLocaleTimeString()}</span>
+
+        {/* Main Weather Display - Horizontal Layout */}
+        <div className="flex items-center gap-4 lg:gap-6">
+          <div className="flex items-center gap-3">
+            <FontAwesomeIcon
+              icon={getWeatherIcon(
+                extractConditionCode(current.condition.icon),
+                isNightTime(current.condition.icon)
+              )}
+              className="w-12 h-12 text-blue-500 drop-shadow-lg flex-shrink-0"
+            />
+            <div className="text-left">
+              <div className="text-3xl font-bold text-card-foreground leading-none">
+                {formatTemperature(temp, temperatureUnit)}
+              </div>
+              <p className="text-card-foreground/80 capitalize text-sm font-medium">
+                {current.condition.text}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                Feels like {formatTemperature(feelsLike, temperatureUnit)}
+              </p>
+            </div>
           </div>
-          <p className="text-muted-foreground/70 text-xs">
-            {new Date(location.localtime).toLocaleDateString()}
-          </p>
+
+          {/* Time Info */}
+          <div className="text-right flex-shrink-0 hidden sm:block">
+            <div className="flex items-center gap-1 text-muted-foreground text-xs justify-end">
+              <Clock className="w-3 h-3" />
+              <span>{new Date(location.localtime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            <p className="text-muted-foreground/70 text-xs">
+              {new Date(location.localtime).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Main Weather Info */}
-      <div className="text-center mb-6">
-        <div className="flex items-center justify-center mb-4">
-          <Image
-            src={getWeatherIconUrl(current.condition.icon)}
-            alt={current.condition.text}
-            width={80}
-            height={80}
-            className="drop-shadow-lg"
-          />
-        </div>
-        <div className="text-5xl font-bold text-card-foreground mb-2">
-          {formatTemperature(temp, temperatureUnit)}
-        </div>
-        <p className="text-card-foreground/80 capitalize text-lg font-medium">
-          {current.condition.text}
-        </p>
-        <p className="text-muted-foreground text-sm">
-          Feels like {formatTemperature(feelsLike, temperatureUnit)}
-        </p>
-      </div>
-
-      {/* Weather Metrics Buttons */}
-      <div className="flex flex-wrap gap-3 mb-4 justify-center">
-        <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-muted/40 rounded-xl border border-border/50 hover:bg-muted/60 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[100px] sm:min-w-[120px]">
-          <Droplets className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Humidity</span>
+      {/* Compact Weather Metrics Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+        <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 rounded-lg border border-border/50 hover:bg-muted/60 transition-all duration-200">
+          <Droplets className="w-4 h-4 text-blue-500 flex-shrink-0" />
+          <div className="min-w-0">
+            <span className="text-xs text-muted-foreground block">Humidity</span>
             <span className="text-sm font-semibold text-card-foreground">{current.humidity}%</span>
           </div>
         </div>
         
-        <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-muted/40 rounded-xl border border-border/50 hover:bg-muted/60 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[100px] sm:min-w-[120px]">
-          <Wind className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Wind</span>
+        <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 rounded-lg border border-border/50 hover:bg-muted/60 transition-all duration-200">
+          <Wind className="w-4 h-4 text-green-500 flex-shrink-0" />
+          <div className="min-w-0">
+            <span className="text-xs text-muted-foreground block">Wind</span>
             <span className="text-sm font-semibold text-card-foreground">
               {formatWindSpeed(windSpeed, windSpeedUnit)}
             </span>
           </div>
         </div>
         
-        <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-muted/40 rounded-xl border border-border/50 hover:bg-muted/60 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[100px] sm:min-w-[120px]">
-          <Gauge className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500" />
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Pressure</span>
+        <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 rounded-lg border border-border/50 hover:bg-muted/60 transition-all duration-200">
+          <Gauge className="w-4 h-4 text-purple-500 flex-shrink-0" />
+          <div className="min-w-0">
+            <span className="text-xs text-muted-foreground block">Pressure</span>
             <span className="text-sm font-semibold text-card-foreground">
               {windSpeedUnit === 'metric' ? `${current.pressure_mb} mb` : `${current.pressure_in} in`}
             </span>
           </div>
         </div>
         
-        <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-muted/40 rounded-xl border border-border/50 hover:bg-muted/60 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[100px] sm:min-w-[120px]">
-          <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" />
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Visibility</span>
+        <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 rounded-lg border border-border/50 hover:bg-muted/60 transition-all duration-200">
+          <Eye className="w-4 h-4 text-amber-500 flex-shrink-0" />
+          <div className="min-w-0">
+            <span className="text-xs text-muted-foreground block">Visibility</span>
             <span className="text-sm font-semibold text-card-foreground">
               {windSpeedUnit === 'metric' ? `${current.vis_km} km` : `${current.vis_miles} mi`}
             </span>
           </div>
         </div>
         
-        <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 bg-muted/40 rounded-xl border border-border/50 hover:bg-muted/60 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md min-w-[100px] sm:min-w-[120px]">
-          <Thermometer className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">UV Index</span>
+        <div className="flex items-center gap-2 px-3 py-2 bg-muted/40 rounded-lg border border-border/50 hover:bg-muted/60 transition-all duration-200">
+          <Thermometer className="w-4 h-4 text-red-500 flex-shrink-0" />
+          <div className="min-w-0">
+            <span className="text-xs text-muted-foreground block">UV Index</span>
             <span className="text-sm font-semibold text-card-foreground">{current.uv}</span>
           </div>
         </div>
-      </div>
 
-      {/* Additional Info */}
-      <div className="bg-muted/30 rounded-lg p-4 border">
-        <p className="text-muted-foreground text-sm text-center">
-          Last updated: {new Date(current.last_updated).toLocaleString()}
-        </p>
+        {/* Last Updated - Mobile visible, desktop in grid */}
+        <div className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-lg border border-border/50 col-span-2 sm:col-span-1">
+          <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          <div className="min-w-0">
+            <span className="text-xs text-muted-foreground block">Updated</span>
+            <span className="text-sm font-semibold text-card-foreground">
+              {new Date(current.last_updated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+        </div>
       </div>
     </WeatherCard>
   );

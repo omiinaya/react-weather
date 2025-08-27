@@ -52,13 +52,3 @@ export const formatDate = (dateString: string, options: Intl.DateTimeFormatOptio
 }): string => {
   return new Date(dateString).toLocaleDateString('en-US', options);
 };
-
-// Utility function to get weather icon URL
-export const getWeatherIconUrl = (iconPath: string): string => {
-  // WeatherAPI icons are relative paths like "//cdn.weatherapi.com/weather/64x64/day/113.png"
-  // We need to convert them to absolute URLs
-  if (iconPath.startsWith('//')) {
-    return `https:${iconPath}`;
-  }
-  return iconPath;
-};
