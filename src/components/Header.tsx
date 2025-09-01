@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Cloud, MapPin, Settings } from 'lucide-react';
+import { Cloud, MapPin, Settings, Github } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -40,8 +40,23 @@ export function Header() {
         {/* Spacer to balance layout */}
         <div className="flex-1" />
 
-        {/* Theme Toggle - Right aligned */}
-        <div className="flex items-center flex-shrink-0">
+        {/* GitHub Repo Link and Theme Toggle - Right aligned */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => window.open('https://github.com/omiinaya/react-weather', '_blank')}
+            className={cn(
+              "relative h-9 w-9 rounded-md border",
+              "transition-all duration-300 ease-in-out",
+              "hover:scale-105 hover:shadow-md",
+              "bg-background hover:bg-accent",
+              "border-border hover:border-primary/50"
+            )}
+            aria-label="View source code on GitHub"
+          >
+            <Github className="h-4 w-4" />
+          </Button>
           <ThemeToggle />
         </div>
       </div>

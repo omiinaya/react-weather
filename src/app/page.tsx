@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { LocationSearch } from '@/components/LocationSearch';
 import { UnifiedWeather } from '@/components/UnifiedWeather';
@@ -16,6 +16,12 @@ export default function Home() {
   const [timeFormat, setTimeFormat] = useState<'12hr' | '24hr'>('12hr');
   const [pressureUnit, setPressureUnit] = useState<'mb' | 'inHg'>('mb');
   const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // useEffect only runs on the client, so we can avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch current weather data
   const {
@@ -129,9 +135,11 @@ export default function Home() {
                 className={`
                   px-4 py-2 rounded-lg border transition-all duration-200 font-medium text-sm
                   hover:scale-105 hover:shadow-md
-                  ${theme === 'dark'
-                    ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
-                    : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
+                  ${!mounted
+                    ? 'bg-primary/10 border-primary/30 text-primary'
+                    : theme === 'dark'
+                      ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
+                      : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
                   }
                 `}
               >
@@ -142,9 +150,11 @@ export default function Home() {
                 className={`
                   px-4 py-2 rounded-lg border transition-all duration-200 font-medium text-sm
                   hover:scale-105 hover:shadow-md
-                  ${theme === 'dark'
-                    ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
-                    : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
+                  ${!mounted
+                    ? 'bg-primary/10 border-primary/30 text-primary'
+                    : theme === 'dark'
+                      ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
+                      : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
                   }
                 `}
               >
@@ -155,9 +165,11 @@ export default function Home() {
                 className={`
                   px-4 py-2 rounded-lg border transition-all duration-200 font-medium text-sm
                   hover:scale-105 hover:shadow-md
-                  ${theme === 'dark'
-                    ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
-                    : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
+                  ${!mounted
+                    ? 'bg-primary/10 border-primary/30 text-primary'
+                    : theme === 'dark'
+                      ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
+                      : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
                   }
                 `}
               >
@@ -168,9 +180,11 @@ export default function Home() {
                 className={`
                   px-4 py-2 rounded-lg border transition-all duration-200 font-medium text-sm
                   hover:scale-105 hover:shadow-md
-                  ${theme === 'dark'
-                    ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
-                    : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
+                  ${!mounted
+                    ? 'bg-primary/10 border-primary/30 text-primary'
+                    : theme === 'dark'
+                      ? 'bg-card border-border text-foreground hover:bg-accent hover:border-accent'
+                      : 'bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50'
                   }
                 `}
               >
@@ -183,16 +197,18 @@ export default function Home() {
           {hasError && (
             <div className={`
               rounded-lg p-4 mb-6 border transition-all duration-300 animate-scale-in
-              ${theme === 'dark'
-                ? 'bg-destructive/20 border-destructive/40 text-destructive-foreground shadow-lg'
-                : 'bg-destructive/15 border-destructive/30 text-destructive shadow-lg'
+              ${!mounted
+                ? 'bg-destructive/15 border-destructive/30 text-destructive shadow-lg'
+                : theme === 'dark'
+                  ? 'bg-destructive/20 border-destructive/40 text-destructive-foreground shadow-lg'
+                  : 'bg-destructive/15 border-destructive/30 text-destructive shadow-lg'
               }
             `}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`
                     w-6 h-6 rounded-full flex items-center justify-center
-                    ${theme === 'dark' ? 'bg-destructive/40' : 'bg-destructive/30'}
+                    ${!mounted ? 'bg-destructive/30' : theme === 'dark' ? 'bg-destructive/40' : 'bg-destructive/30'}
                   `}>
                     <span className="text-sm">⚠️</span>
                   </div>
@@ -205,9 +221,11 @@ export default function Home() {
                   className={`
                     px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200
                     hover:scale-105 hover:shadow-md
-                    ${theme === 'dark'
-                      ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80'
-                      : 'bg-destructive text-white hover:bg-destructive/90'
+                    ${!mounted
+                      ? 'bg-destructive text-white hover:bg-destructive/90'
+                      : theme === 'dark'
+                        ? 'bg-destructive text-destructive-foreground hover:bg-destructive/80'
+                        : 'bg-destructive text-white hover:bg-destructive/90'
                     }
                   `}
                 >

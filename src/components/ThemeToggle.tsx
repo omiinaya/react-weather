@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,31 @@ import { cn } from '@/lib/utils';
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // useEffect only runs on the client, so we can avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    // Return a placeholder with consistent classes during SSR
+    return (
+      <Button
+        variant="outline"
+        size="icon"
+        className={cn(
+          "relative h-9 w-9 rounded-md border",
+          "bg-background border-border",
+          className
+        )}
+        aria-label="Toggle theme"
+      >
+        <Sun className="h-4 w-4 opacity-0" />
+        <Moon className="absolute h-4 w-4 opacity-0" />
+      </Button>
+    );
+  }
 
   return (
     <Button

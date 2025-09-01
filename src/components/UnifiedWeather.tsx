@@ -124,17 +124,21 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = ({
                 <span className="text-xs font-medium text-muted-foreground">Sunrise</span>
                 <div className="flex items-center gap-1">
                   <FontAwesomeIcon icon={faSolidSun} className="w-4 h-4 text-amber-500" />
-                  <span className="text-sm font-semibold text-card-foreground">{sunData.sunrise}</span>
+                  <span className="text-sm font-semibold text-card-foreground">
+                    {formatTime(createTimeString(sunData.sunrise), timeFormat)}
+                  </span>
                 </div>
               </div>
-
+              
               <div className="w-px h-6 bg-border/50"></div>
-
+              
               <div className="flex flex-col items-center gap-1 flex-1">
                 <span className="text-xs font-medium text-muted-foreground">Sunset</span>
                 <div className="flex items-center gap-1">
                   <FontAwesomeIcon icon={faSolidMoon} className="w-4 h-4 text-orange-400" />
-                  <span className="text-sm font-semibold text-card-foreground">{sunData.sunset}</span>
+                  <span className="text-sm font-semibold text-card-foreground">
+                    {formatTime(createTimeString(sunData.sunset), timeFormat)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -344,6 +348,25 @@ const formatTime = (dateString: string, format: '12hr' | '24hr' = '12hr'): strin
     hour12: format === '12hr'
   };
   return date.toLocaleTimeString([], options);
+};
+
+// Helper function to convert time string (e.g., "06:23 AM") to Date object
+const createTimeString = (timeStr: string): string => {
+  // Create a date object with today's date and the given time
+  const today = new Date();
+  const [time, period] = timeStr.split(' ');
+  const [hours, minutes] = time.split(':').map(Number);
+  
+  // Convert to 24-hour format if needed
+  let hours24 = hours;
+  if (period === 'PM' && hours !== 12) {
+    hours24 = hours + 12;
+  } else if (period === 'AM' && hours === 12) {
+    hours24 = 0;
+  }
+  
+  today.setHours(hours24, minutes, 0, 0);
+  return today.toISOString();
 };
 
 // Utility function to format pressure based on unit preference
