@@ -3,13 +3,11 @@
 import React, { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { LocationSearch } from '@/components/LocationSearch';
-import { CurrentWeather } from '@/components/CurrentWeather';
-import { WeatherForecast } from '@/components/WeatherForecast';
+import { UnifiedWeather } from '@/components/UnifiedWeather';
 import { LoadingOverlay } from '@/components/LoadingSpinner';
 import { Header } from '@/components/Header';
 import { getWeatherAPIService, WeatherAPIError } from '@/lib/api/weather-api';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Astro } from '@/types/weather';
 
 export default function Home() {
   const [location, setLocation] = useState<string>('New York');
@@ -93,8 +91,8 @@ export default function Home() {
   const isLoading = isCurrentWeatherLoading || isForecastLoading;
   const hasError = currentError || forecastError;
 
-  // Extract today's astro data from forecast
-  const sunData: Astro | null = forecastData?.forecast?.forecastday?.[0]?.astro || null;
+  // Combine errors - prefer current weather error if both exist
+  const combinedError = currentError || forecastError;
 
   return (
     <div className="min-h-screen bg-background">
@@ -219,32 +217,19 @@ export default function Home() {
             </div>
           )}
 
-          {/* Weather Content - Improved Spacing */}
-          <div className="space-y-6">
-            {/* Current Weather */}
-            <div className="w-full">
-              <CurrentWeather
-                data={currentWeatherData || null}
-                isLoading={isCurrentWeatherLoading}
-                error={currentError}
-                temperatureUnit={temperatureUnit}
-                windSpeedUnit={windSpeedUnit}
-                timeFormat={timeFormat}
-                pressureUnit={pressureUnit}
-                sunData={sunData}
-              />
-            </div>
-
-            {/* Forecast */}
-            <div className="w-full">
-              <WeatherForecast
-                data={forecastData || null}
-                isLoading={isForecastLoading}
-                error={forecastError}
-                temperatureUnit={temperatureUnit}
-                days={5}
-              />
-            </div>
+          {/* Unified Weather Component */}
+          <div className="w-full">
+            <UnifiedWeather
+              currentData={currentWeatherData || null}
+              forecastData={forecastData || null}
+              isLoading={isLoading}
+              error={combinedError}
+              temperatureUnit={temperatureUnit}
+              windSpeedUnit={windSpeedUnit}
+              timeFormat={timeFormat}
+              pressureUnit={pressureUnit}
+              days={5}
+            />
           </div>
 
           {/* Footer - More Compact */}

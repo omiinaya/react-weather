@@ -12,12 +12,15 @@ Document component architecture, props, usage examples, and implementation detai
 - State management patterns
 - Styling guidelines
 - Accessibility considerations
+- Migration guides for deprecated components
 
 ## Files to Add
 - component-hierarchy.md
+- unified-weather-component.md (NEW)
 - weather-display-component.md
 - search-component.md
-- forecast-component.md
+- forecast-component.md (DEPRECATED - use unified-weather-component)
+- current-weather-component.md (DEPRECATED - use unified-weather-component)
 - props-reference.md
 - styling-guidelines.md
 - accessibility.md
