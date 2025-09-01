@@ -2,7 +2,18 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+### Environment Setup
+
+1. Copy the `.env` file and configure your environment variables:
+
+```bash
+# The application requires a WeatherAPI key
+# Get your API key from https://www.weatherapi.com/
+NEXT_PUBLIC_WEATHER_API_KEY=your_api_key_here
+WEATHER_API_KEY=your_api_key_here
+```
+
+2. Run the development server:
 
 ```bash
 npm run dev
