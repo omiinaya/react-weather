@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Cloud, MapPin, Settings, Github } from 'lucide-react';
+import { Cloud, Github } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

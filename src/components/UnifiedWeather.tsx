@@ -11,9 +11,7 @@ import {
   Clock,
   Calendar,
   CloudRain,
-  Umbrella,
-  Sun,
-  Moon
+  Umbrella
 } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun as faSolidSun, faMoon as faSolidMoon } from '@fortawesome/free-solid-svg-icons';
@@ -37,7 +35,7 @@ interface UnifiedWeatherProps {
   showLocationHeader?: boolean;
 }
 
-export const UnifiedWeather: React.FC<UnifiedWeatherProps> = ({
+export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
   currentData,
   forecastData,
   isLoading = false,
@@ -47,7 +45,6 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = ({
   timeFormat = '12hr',
   pressureUnit = 'mb',
   days = 5,
-  compactMode = false,
   showLocationHeader = true,
 }) => {
   if (isLoading) {
@@ -319,7 +316,10 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = ({
       </WeatherCard>
     </div>
   );
-};
+});
+
+// Add display name for better debugging
+UnifiedWeather.displayName = 'UnifiedWeather';
 
 // Weather Metric Component
 const WeatherMetric: React.FC<{
@@ -339,7 +339,7 @@ const WeatherMetric: React.FC<{
   </div>
 );
 
-// Utility function to format time based on 12hr/24hr preference
+// Utility function to format time based on 12hr/24hr preference - moved outside component
 const formatTime = (dateString: string, format: '12hr' | '24hr' = '12hr'): string => {
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
@@ -350,7 +350,7 @@ const formatTime = (dateString: string, format: '12hr' | '24hr' = '12hr'): strin
   return date.toLocaleTimeString([], options);
 };
 
-// Helper function to convert time string (e.g., "06:23 AM") to Date object
+// Helper function to convert time string (e.g., "06:23 AM") to Date object - moved outside component
 const createTimeString = (timeStr: string): string => {
   // Create a date object with today's date and the given time
   const today = new Date();
@@ -369,7 +369,7 @@ const createTimeString = (timeStr: string): string => {
   return today.toISOString();
 };
 
-// Utility function to format pressure based on unit preference
+// Utility function to format pressure based on unit preference - moved outside component
 const formatPressure = (current: CurrentWeatherType, unit: 'mb' | 'inHg' = 'mb'): string => {
   return unit === 'mb' ? `${current.pressure_mb} mb` : `${current.pressure_in} inHg`;
 };

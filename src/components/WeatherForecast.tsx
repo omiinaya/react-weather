@@ -16,7 +16,7 @@ interface WeatherForecastProps {
   days?: number;
 }
 
-export const WeatherForecast: React.FC<WeatherForecastProps> = ({
+export const WeatherForecast: React.FC<WeatherForecastProps> = React.memo(({
   data,
   isLoading = false,
   error = null,
@@ -170,7 +170,10 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({
       </div>
     </WeatherCard>
   );
-};
+});
+
+// Add display name for better debugging
+WeatherForecast.displayName = 'WeatherForecast';
 
 // Helper function for class names (since we can't import cn from WeatherCard in this context)
 function cn(...classes: (string | undefined | null | false)[]): string {

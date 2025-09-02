@@ -87,15 +87,19 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   };
 
   const handleSuggestionClick = (suggestion: LocationSuggestion) => {
+    console.log('Suggestion clicked:', suggestion);
     const locationString = `${suggestion.name}, ${suggestion.country}`;
     setQuery(locationString);
     setShowSuggestions(false);
+    console.log('Calling onLocationSelect with:', locationString);
     onLocationSelect(locationString);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
+    console.log('Form submitted, preventing default behavior');
     e.preventDefault();
     if (query.trim()) {
+      console.log('Calling onLocationSelect with:', query.trim());
       onLocationSelect(query.trim());
     }
   };
@@ -152,11 +156,24 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
       {showSuggestions && suggestions.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-popover border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto animate-scale-in">
           {suggestions.map((suggestion) => (
-            <button
+            <div
               key={suggestion.id}
-              type="button"
-              onClick={() => handleSuggestionClick(suggestion)}
-              className="w-full px-4 py-3 text-left hover:bg-accent transition-all duration-200 flex items-center gap-3 group"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSuggestionClick(suggestion);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSuggestionClick(suggestion);
+                }
+              }}
+              className="w-full px-4 py-3 text-left hover:bg-accent transition-all duration-200 flex items-center gap-3 group cursor-pointer"
+              role="button"
+              tabIndex={0}
+              aria-label={`Select ${suggestion.name}, ${suggestion.region ? suggestion.region + ', ' : ''}${suggestion.country}`}
             >
               <MapPin className="w-4 h-4 text-muted-foreground group-hover:text-foreground flex-shrink-0 transition-colors" />
               <div className="flex-1 min-w-0">
@@ -168,7 +185,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
                   {suggestion.country}
                 </div>
               </div>
-            </button>
+            </div>
           ))}
         </div>
       )}

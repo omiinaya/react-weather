@@ -30,7 +30,7 @@ interface CurrentWeatherProps {
   sunData?: Astro | null;
 }
 
-export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
+export const CurrentWeather: React.FC<CurrentWeatherProps> = React.memo(({
   data,
   isLoading = false,
   error = null,
@@ -231,9 +231,12 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({
 
     </WeatherCard>
   );
-};
+});
 
-// Utility function to format time based on 12hr/24hr preference
+// Add display name for better debugging
+CurrentWeather.displayName = 'CurrentWeather';
+
+// Utility function to format time based on 12hr/24hr preference - moved outside component
 const formatTime = (dateString: string, format: '12hr' | '24hr' = '12hr'): string => {
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
@@ -244,7 +247,7 @@ const formatTime = (dateString: string, format: '12hr' | '24hr' = '12hr'): strin
   return date.toLocaleTimeString([], options);
 };
 
-// Utility function to format pressure based on unit preference
+// Utility function to format pressure based on unit preference - moved outside component
 const formatPressure = (current: CurrentWeatherType, unit: 'mb' | 'inHg' = 'mb'): string => {
   return unit === 'mb' ? `${current.pressure_mb} mb` : `${current.pressure_in} inHg`;
 };

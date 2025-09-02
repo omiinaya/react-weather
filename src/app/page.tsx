@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { LocationSearch } from '@/components/LocationSearch';
 import { UnifiedWeather } from '@/components/UnifiedWeather';
@@ -8,19 +8,24 @@ import { LoadingOverlay } from '@/components/LoadingSpinner';
 import { Header } from '@/components/Header';
 import { getWeatherAPIService, WeatherAPIError } from '@/lib/api/weather-api';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useWeatherPreferences } from '@/hooks/useWeatherPreferences';
 
 export default function Home() {
   const [location, setLocation] = useState<string>('New York');
-  const [temperatureUnit, setTemperatureUnit] = useState<'celsius' | 'fahrenheit'>('celsius');
-  const [windSpeedUnit, setWindSpeedUnit] = useState<'metric' | 'imperial'>('metric');
-  const [timeFormat, setTimeFormat] = useState<'12hr' | '24hr'>('12hr');
-  const [pressureUnit, setPressureUnit] = useState<'mb' | 'inHg'>('mb');
+  const {
+    preferences,
+    toggleTemperatureUnit,
+    toggleWindSpeedUnit,
+    toggleTimeFormat,
+    togglePressureUnit,
+  } = useWeatherPreferences();
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // useEffect only runs on the client, so we can avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
+    console.log('Page component mounted');
   }, []);
 
   // Fetch current weather data
@@ -31,7 +36,10 @@ export default function Home() {
     refetch: refetchCurrentWeather,
   } = useQuery({
     queryKey: ['current-weather', location],
-    queryFn: () => getWeatherAPIService().getCurrentWeather(location),
+    queryFn: () => {
+      console.log('Fetching current weather for:', location);
+      return getWeatherAPIService().getCurrentWeather(location);
+    },
     enabled: !!location,
     retry: 1,
   });
@@ -44,14 +52,26 @@ export default function Home() {
     refetch: refetchForecast,
   } = useQuery({
     queryKey: ['forecast', location],
-    queryFn: () => getWeatherAPIService().getForecast(location, 5),
+    queryFn: () => {
+      console.log('Fetching forecast for:', location);
+      return getWeatherAPIService().getForecast(location, 5);
+    },
     enabled: !!location,
     retry: 1,
   });
 
+  // Debug useEffect to track re-renders
+  useEffect(() => {
+    console.log('Page component re-rendered with location:', location);
+    console.log('Current timestamp:', Date.now());
+  }, [location, currentWeatherData, forecastData]);
+
   const handleLocationSelect = useCallback((selectedLocation: string) => {
+    console.log('handleLocationSelect called with:', selectedLocation);
+    console.log('Current location:', location);
+    console.log('Setting new location state');
     setLocation(selectedLocation);
-  }, []);
+  }, [location]);
 
   const handleRetry = useCallback(() => {
     if (location) {
@@ -60,23 +80,8 @@ export default function Home() {
     }
   }, [location, refetchCurrentWeather, refetchForecast]);
 
-  const toggleTemperatureUnit = useCallback(() => {
-    setTemperatureUnit(prev => prev === 'celsius' ? 'fahrenheit' : 'celsius');
-  }, []);
 
-  const toggleWindSpeedUnit = useCallback(() => {
-    setWindSpeedUnit(prev => prev === 'metric' ? 'imperial' : 'metric');
-  }, []);
-
-  const toggleTimeFormat = useCallback(() => {
-    setTimeFormat(prev => prev === '12hr' ? '24hr' : '12hr');
-  }, []);
-
-  const togglePressureUnit = useCallback(() => {
-    setPressureUnit(prev => prev === 'mb' ? 'inHg' : 'mb');
-  }, []);
-
-  const getErrorMessage = (error: unknown): string | null => {
+  const getErrorMessage = useCallback((error: unknown): string | null => {
     console.log('getErrorMessage called with:', error);
     if (error instanceof WeatherAPIError) {
       console.log('WeatherAPIError:', error.message);
@@ -88,17 +93,35 @@ export default function Home() {
     }
     console.log('Unknown error type, returning generic message');
     return 'An unexpected error occurred';
-  };
+  }, []);
 
 
-  const currentError = currentWeatherError ? getErrorMessage(currentWeatherError) : null;
-  const forecastError = forecastErrorResponse ? getErrorMessage(forecastErrorResponse) : null;
+  // Memoize error handling and loading states
+  const currentError = useMemo(() =>
+    currentWeatherError ? getErrorMessage(currentWeatherError) : null,
+    [currentWeatherError, getErrorMessage]
+  );
+  
+  const forecastError = useMemo(() =>
+    forecastErrorResponse ? getErrorMessage(forecastErrorResponse) : null,
+    [forecastErrorResponse, getErrorMessage]
+  );
 
-  const isLoading = isCurrentWeatherLoading || isForecastLoading;
-  const hasError = currentError || forecastError;
+  const isLoading = useMemo(() =>
+    isCurrentWeatherLoading || isForecastLoading,
+    [isCurrentWeatherLoading, isForecastLoading]
+  );
+  
+  const hasError = useMemo(() =>
+    currentError || forecastError,
+    [currentError, forecastError]
+  );
 
   // Combine errors - prefer current weather error if both exist
-  const combinedError = currentError || forecastError;
+  const combinedError = useMemo(() =>
+    currentError || forecastError,
+    [currentError, forecastError]
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -119,7 +142,7 @@ export default function Home() {
 
           {/* Search Section - More Compact */}
           <div className="flex flex-col items-center mb-6 sm:mb-8 animate-slide-up">
-            <div className="w-full max-w-md mb-4">
+            <div className="w-full max-w-md mb-4" onClick={(e) => e.stopPropagation()}>
               <LocationSearch
                onLocationSelect={handleLocationSelect}
                isLoading={isLoading}
@@ -143,7 +166,7 @@ export default function Home() {
                   }
                 `}
               >
-                °{temperatureUnit === 'celsius' ? 'C' : 'F'}
+                °{preferences.temperatureUnit === 'celsius' ? 'C' : 'F'}
               </button>
               <button
                 onClick={toggleWindSpeedUnit}
@@ -158,7 +181,7 @@ export default function Home() {
                   }
                 `}
               >
-                {windSpeedUnit === 'metric' ? 'km/h' : 'mph'}
+                {preferences.windSpeedUnit === 'metric' ? 'km/h' : 'mph'}
               </button>
               <button
                 onClick={toggleTimeFormat}
@@ -173,7 +196,7 @@ export default function Home() {
                   }
                 `}
               >
-                {timeFormat === '12hr' ? '12hr' : '24hr'}
+                {preferences.timeFormat === '12hr' ? '12hr' : '24hr'}
               </button>
               <button
                 onClick={togglePressureUnit}
@@ -188,7 +211,7 @@ export default function Home() {
                   }
                 `}
               >
-                {pressureUnit === 'mb' ? 'mb' : 'inHg'}
+                {preferences.pressureUnit === 'mb' ? 'mb' : 'inHg'}
               </button>
             </div>
           </div>
@@ -242,10 +265,7 @@ export default function Home() {
               forecastData={forecastData || null}
               isLoading={isLoading}
               error={combinedError}
-              temperatureUnit={temperatureUnit}
-              windSpeedUnit={windSpeedUnit}
-              timeFormat={timeFormat}
-              pressureUnit={pressureUnit}
+              {...preferences}
               days={5}
             />
           </div>
