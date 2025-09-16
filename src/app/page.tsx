@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { LocationSearch } from '@/components/LocationSearch';
-import { UnifiedWeather } from '@/components/UnifiedWeather';
+import { WeatherContainer } from '@/components/WeatherContainer';
 import { LoadingOverlay } from '@/components/LoadingSpinner';
 import { Header } from '@/components/Header';
 import { getWeatherAPIService, WeatherAPIError } from '@/lib/api/weather-api';
@@ -52,24 +52,12 @@ export default function Home() {
     refetch: refetchForecast,
   } = useQuery({
     queryKey: ['forecast', location],
-    queryFn: () => {
-      console.log('Fetching forecast for:', location);
-      return getWeatherAPIService().getForecast(location, 5);
-    },
+    queryFn: () => getWeatherAPIService().getForecast(location, 3),  // API limitation: only 3 days available
     enabled: !!location,
     retry: 1,
   });
 
-  // Debug useEffect to track re-renders
-  useEffect(() => {
-    console.log('Page component re-rendered with location:', location);
-    console.log('Current timestamp:', Date.now());
-  }, [location, currentWeatherData, forecastData]);
-
   const handleLocationSelect = useCallback((selectedLocation: string) => {
-    console.log('handleLocationSelect called with:', selectedLocation);
-    console.log('Current location:', location);
-    console.log('Setting new location state');
     setLocation(selectedLocation);
   }, [location]);
 
@@ -258,15 +246,15 @@ export default function Home() {
             </div>
           )}
 
-          {/* Unified Weather Component */}
+          {/* Weather Container with Historical Data */}
           <div className="w-full">
-            <UnifiedWeather
+            <WeatherContainer
               currentData={currentWeatherData || null}
               forecastData={forecastData || null}
+              location={location}
               isLoading={isLoading}
               error={combinedError}
               {...preferences}
-              days={5}
             />
           </div>
 

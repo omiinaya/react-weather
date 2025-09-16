@@ -7,6 +7,7 @@ import { WeatherCard, formatTemperature, formatDate } from './WeatherCard';
 import { ForecastResponse } from '@/types/weather';
 import { LoadingSpinner } from './LoadingSpinner';
 import { getWeatherIcon, extractConditionCode, isNightTime } from '@/lib/utils/weather-icons';
+import { cn } from '@/lib/utils/cn';
 
 interface WeatherForecastProps {
   data: ForecastResponse | null;
@@ -67,8 +68,9 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = React.memo(({
     );
   }
 
-  const forecastDays = data.forecast.forecastday.slice(0, days);
-
+  // Use all available days (historical + current + future)
+  const forecastDays = data.forecast.forecastday;
+  
   return (
     <WeatherCard title="5-Day Forecast">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -98,13 +100,24 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = React.memo(({
                     day: 'numeric'
                   })}</span>
                 </div>
-                {isToday ? (
-                  <span className="text-primary text-xs font-medium bg-primary/10 px-2 py-1 rounded-full">
-                    Today
-                  </span>
-                ) : (
-                  <span className="invisible text-xs px-2 py-1">Placeholder</span>
-                )}
+                <span className={cn(
+                  'text-xs font-medium px-2 py-1 rounded-full',
+                  isToday
+                    ? 'text-primary bg-primary/10'
+                    : index < 2
+                      ? 'text-amber-600 bg-amber-100 dark:bg-amber-900/30'
+                      : 'text-green-600 bg-green-100 dark:bg-green-900/30'
+                )}>
+                  {isToday
+                    ? 'Today'
+                    : index === 0
+                      ? '2 days ago'
+                      : index === 1
+                        ? 'Yesterday'
+                        : index === 3
+                          ? 'Tomorrow'
+                          : 'In 2 days'}
+                </span>
               </div>
 
               {/* Weather Icon */}
@@ -174,8 +187,3 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = React.memo(({
 
 // Add display name for better debugging
 WeatherForecast.displayName = 'WeatherForecast';
-
-// Helper function for class names (since we can't import cn from WeatherCard in this context)
-function cn(...classes: (string | undefined | null | false)[]): string {
-  return classes.filter(Boolean).join(' ');
-}

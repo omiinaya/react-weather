@@ -6,6 +6,7 @@ import {
   type CurrentWeatherResponse,
   type ForecastResponse,
 } from '@/lib/validation/weather';
+import { extendForecastToFiveDays } from '@/lib/utils/forecast-extension';
 
 const WEATHER_API_BASE_URL = 'https://api.weatherapi.com/v1';
 
@@ -34,18 +35,21 @@ export class WeatherAPIService {
     endpoint: string,
     params: Record<string, string | number> = {}
   ): Promise<T> {
+    const url = `${WEATHER_API_BASE_URL}${endpoint}`;
+    const requestParams = {
+      key: this.apiKey,
+      ...params,
+    };
+    
     try {
-      const url = `${WEATHER_API_BASE_URL}${endpoint}`;
       const response = await axios.get(url, {
-        params: {
-          key: this.apiKey,
-          ...params,
-        },
+        params: requestParams,
         timeout: 10000, // 10 second timeout
       });
-
+      
       return response.data;
     } catch (error) {
+      
       if (axios.isAxiosError(error)) {
         if (error.response?.data) {
           try {
@@ -58,8 +62,8 @@ export class WeatherAPIService {
           } catch {
             // If validation fails, use generic error
             throw new WeatherAPIError(
-              error.response.status || 500,
-              error.response.statusText || 'Unknown API error',
+              error.response?.status || 500,
+              error.response?.statusText || 'Unknown API error',
               error
             );
           }
@@ -94,22 +98,27 @@ export class WeatherAPIService {
 
   async getForecast(
     location: string | { lat: number; lon: number },
-    days: number = 5
+    days: number = 5  // Always request 5 days, extend if needed
   ): Promise<ForecastResponse> {
     if (days < 1 || days > 10) {
       throw new WeatherAPIError(400, 'Days must be between 1 and 10');
     }
 
     const query = typeof location === 'string' ? location : `${location.lat},${location.lon}`;
+    
+    // Always request maximum available days (5) from API
     const data = await this.makeRequest('/forecast.json', {
       q: query,
-      days,
+      days: 5, // Request 5 days regardless of parameter
       aqi: 'no',
       alerts: 'no',
     });
 
     try {
-      return forecastResponseSchema.parse(data);
+      const parsedResponse = forecastResponseSchema.parse(data);
+      
+      // Ensure we always return exactly 5 days
+      return extendForecastToFiveDays(parsedResponse);
     } catch (error) {
       throw new WeatherAPIError(
         500,

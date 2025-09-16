@@ -91,7 +91,8 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
     );
   }
 
-  const forecastDays = forecastData?.forecast?.forecastday?.slice(0, days) || [];
+  const forecastDays = forecastData?.forecast?.forecastday || [];
+  
   const sunData: Astro | null = forecastDays[0]?.astro || null;
   const location = currentData?.location || forecastData?.location;
 
@@ -160,97 +161,142 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
       )}
 
       <WeatherCard title="Weather Forecast">
-        {/* 5-Day Forecast Section */}
-        {forecastDays.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-primary" />
-              5-Day Forecast
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-              {forecastDays.map((day, index) => {
-                const maxTemp = temperatureUnit === 'celsius' ? day.day.maxtemp_c : day.day.maxtemp_f;
-                const minTemp = temperatureUnit === 'celsius' ? day.day.mintemp_c : day.day.mintemp_f;
-                const isToday = index === 0;
-                const chanceOfRain = day.day.daily_chance_of_rain;
-                const chanceOfSnow = day.day.daily_chance_of_snow;
+        {/* Forecast Section */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            5-Day Weather Overview
+          </h3>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+            {/* Historical data placeholders */}
+            <div className="weather-card p-3 sm:p-4 text-center transition-all duration-300 bg-muted/30">
+              <div className="mb-3 min-h-[44px] flex flex-col items-center justify-center">
+                <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs sm:text-sm mb-1">
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span>{(() => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - 2);
+                    return date.toLocaleDateString([], {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric'
+                    });
+                  })()}</span>
+                </div>
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full text-amber-600 bg-amber-100 dark:bg-amber-900/30">
+                  2 days ago
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground">Historical data</div>
+            </div>
 
-                return (
-                  <div
-                    key={day.date}
-                    className={cn(
-                      'weather-card p-3 sm:p-4 text-center transition-all duration-300',
-                      'hover:scale-105 hover:shadow-md',
-                      isToday && 'ring-2 ring-primary/50 bg-primary/5'
-                    )}
-                    aria-label={`Forecast for ${formatDate(day.date)}`}
-                  >
-                    {/* Date */}
-                    <div className="mb-3 min-h-[44px] flex flex-col items-center justify-center">
-                      <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs sm:text-sm mb-1">
-                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span>{formatDate(day.date, {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric'
-                        })}</span>
-                      </div>
-                      {isToday && (
-                        <span className="text-primary text-xs font-medium bg-primary/10 px-2 py-0.5 rounded-full">
-                          Today
-                        </span>
+            <div className="weather-card p-3 sm:p-4 text-center transition-all duration-300 bg-muted/30">
+              <div className="mb-3 min-h-[44px] flex flex-col items-center justify-center">
+                <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs sm:text-sm mb-1">
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span>{(() => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - 1);
+                    return date.toLocaleDateString([], {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric'
+                    });
+                  })()}</span>
+                </div>
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full text-amber-600 bg-amber-100 dark:bg-amber-900/30">
+                  1 day ago
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground">Historical data</div>
+            </div>
+
+            {/* Actual forecast data */}
+            {forecastDays.slice(0, 3).map((day, index) => {
+              const maxTemp = temperatureUnit === 'celsius' ? day.day.maxtemp_c : day.day.maxtemp_f;
+              const minTemp = temperatureUnit === 'celsius' ? day.day.mintemp_c : day.day.mintemp_f;
+              const chanceOfRain = day.day.daily_chance_of_rain;
+              const chanceOfSnow = day.day.daily_chance_of_snow;
+
+              return (
+                <div
+                  key={day.date}
+                  className={cn(
+                    'weather-card p-3 sm:p-4 text-center transition-all duration-300',
+                    'hover:scale-105 hover:shadow-md',
+                    index === 0 && 'ring-2 ring-primary/50 bg-primary/5'
+                  )}
+                  aria-label={`Forecast for ${formatDate(day.date)}`}
+                >
+                  {/* Date */}
+                  <div className="mb-3 min-h-[44px] flex flex-col items-center justify-center">
+                    <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs sm:text-sm mb-1">
+                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span>{formatDate(day.date, {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric'
+                      })}</span>
+                    </div>
+                    <span className={cn(
+                      'text-xs font-medium px-2 py-0.5 rounded-full',
+                      index === 0
+                        ? 'text-primary bg-primary/10'
+                        : 'text-green-600 bg-green-100 dark:bg-green-900/30'
+                    )}>
+                      {index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : 'Day after tomorrow'}
+                    </span>
+                  </div>
+
+                  {/* Weather Icon */}
+                  <div className="mb-3">
+                    <FontAwesomeIcon
+                      icon={getWeatherIcon(
+                        extractConditionCode(day.day.condition.icon),
+                        isNightTime(day.day.condition.icon)
+                      )}
+                      className="w-8 h-8 sm:w-10 sm:h-10 text-blue-500 mx-auto drop-shadow-sm"
+                    />
+                    <p className="text-card-foreground/80 text-xs capitalize mt-1 line-clamp-1">
+                      {day.day.condition.text}
+                    </p>
+                  </div>
+
+                  {/* Temperatures */}
+                  <div className="mb-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-card-foreground font-bold text-sm sm:text-base">
+                        {formatTemperature(maxTemp, temperatureUnit)}
+                      </span>
+                      <span className="text-muted-foreground text-xs sm:text-sm">
+                        {formatTemperature(minTemp, temperatureUnit)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Precipitation */}
+                  {(chanceOfRain > 0 || chanceOfSnow > 0) && (
+                    <div className="space-y-1 mb-3">
+                      {chanceOfRain > 0 && (
+                        <div className="flex items-center justify-center gap-1 text-blue-400 text-xs">
+                          <CloudRain className="w-3 h-3" />
+                          <span>{chanceOfRain}%</span>
+                        </div>
+                      )}
+                      {chanceOfSnow > 0 && (
+                        <div className="flex items-center justify-center gap-1 text-blue-300 text-xs">
+                          <Umbrella className="w-3 h-3" />
+                          <span>{chanceOfSnow}%</span>
+                        </div>
                       )}
                     </div>
-
-                    {/* Weather Icon */}
-                    <div className="mb-3">
-                      <FontAwesomeIcon
-                        icon={getWeatherIcon(
-                          extractConditionCode(day.day.condition.icon),
-                          isNightTime(day.day.condition.icon)
-                        )}
-                        className="w-8 h-8 sm:w-10 sm:h-10 text-blue-500 mx-auto drop-shadow-sm"
-                      />
-                      <p className="text-card-foreground/80 text-xs capitalize mt-1 line-clamp-1">
-                        {day.day.condition.text}
-                      </p>
-                    </div>
-
-                    {/* Temperatures */}
-                    <div className="mb-3">
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="text-card-foreground font-bold text-sm sm:text-base">
-                          {formatTemperature(maxTemp, temperatureUnit)}
-                        </span>
-                        <span className="text-muted-foreground text-xs sm:text-sm">
-                          {formatTemperature(minTemp, temperatureUnit)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Precipitation */}
-                    {(chanceOfRain > 0 || chanceOfSnow > 0) && (
-                      <div className="space-y-1 mb-3">
-                        {chanceOfRain > 0 && (
-                          <div className="flex items-center justify-center gap-1 text-blue-400 text-xs">
-                            <CloudRain className="w-3 h-3" />
-                            <span>{chanceOfRain}%</span>
-                          </div>
-                        )}
-                        {chanceOfSnow > 0 && (
-                          <div className="flex items-center justify-center gap-1 text-blue-300 text-xs">
-                            <Umbrella className="w-3 h-3" />
-                            <span>{chanceOfSnow}%</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        )}
+        </div>
 
         {/* Today Separator */}
         <div className="flex items-center my-6" aria-label="Today's weather section">
