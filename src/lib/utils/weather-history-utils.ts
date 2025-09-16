@@ -19,7 +19,7 @@ export function generateDateLabels(windowDates: string[], today: Date): string[]
     if (diffDays === 1) return 'Tomorrow';
     if (diffDays === 2) return 'In 2 days';
     
-    return new Date(dateStr).toLocaleDateString('en-US', { 
+    return date.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric'

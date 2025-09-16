@@ -47,6 +47,14 @@ export class WeatherAPIService {
         timeout: 10000, // 10 second timeout
       });
       
+      // Log API responses for monitoring
+      if (endpoint.includes('forecast')) {
+        console.log('Weather forecast dates:', response.data?.forecast?.forecastday?.map((day: any) => ({
+          date: day.date,
+          day: new Date(day.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+        })));
+      }
+      
       return response.data;
     } catch (error) {
       
