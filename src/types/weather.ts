@@ -145,7 +145,6 @@ export interface WeatherError {
   };
 }
 
-// Search location type
 export interface SearchLocation {
   id: number;
   name: string;
@@ -153,4 +152,100 @@ export interface SearchLocation {
   country: string;
   lat: number;
   lon: number;
+}
+
+export interface WeatherGovPoint {
+  '@context': unknown[];
+  id: string;
+  type: string;
+  geometry: {
+    type: string;
+    coordinates: number[];
+  };
+  properties: {
+    '@id': string;
+    '@type': string;
+    cwa: string;
+    type: string;
+    forecastOffice: string;
+    gridId: string;
+    gridX: number;
+    gridY: number;
+    forecast: string;
+    forecastHourly: string;
+    forecastGridData: string;
+    observationStations: string;
+    relativeLocation: {
+      properties: {
+        city: string;
+        state: string;
+      };
+    };
+    timeZone: string;
+  };
+}
+
+export interface WeatherGovForecast {
+  properties: {
+    periods: WeatherGovForecastPeriod[];
+  };
+}
+
+export interface WeatherGovForecastPeriod {
+  number: number;
+  name: string;
+  startTime: string;
+  endTime: string;
+  isDaytime: boolean;
+  temperature: number;
+  temperatureUnit: string;
+  probabilityOfPrecipitation: {
+    value: number | null;
+  };
+  windSpeed: string;
+  windDirection: string;
+  icon: string;
+  shortForecast: string;
+  detailedForecast?: string;
+}
+
+export interface WeatherGovObservation {
+  properties: {
+    timestamp: string;
+    textDescription: string;
+    icon: string;
+    temperature?: {
+      value?: number;
+    };
+    dewpoint?: {
+      value?: number;
+    };
+    windDirection?: {
+      value?: number;
+    };
+    windSpeed?: {
+      value?: number;
+    };
+    windGust?: {
+      value?: number | null;
+    };
+    barometricPressure?: {
+      value?: number;
+    };
+    relativeHumidity?: {
+      value?: number;
+    };
+    visibility?: {
+      value?: number;
+    };
+  };
+}
+
+export interface WeatherGovStations {
+  features: Array<{
+    properties: {
+      stationIdentifier: string;
+      name: string;
+    };
+  }>;
 }

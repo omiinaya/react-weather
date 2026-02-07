@@ -59,7 +59,7 @@ export default function Home() {
 
   const handleLocationSelect = useCallback((selectedLocation: string) => {
     setLocation(selectedLocation);
-  }, [location]);
+  }, []);
 
   const handleRetry = useCallback(() => {
     if (location) {

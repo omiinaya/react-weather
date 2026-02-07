@@ -132,6 +132,8 @@ export function createFiveDayHistoricalForecast(
           moonset: '12:00 PM',
           moon_phase: 'Full Moon',
           moon_illumination: 100,
+          is_moon_up: 1,
+          is_sun_up: 1,
         },
         hour: [],
       };

@@ -1,0 +1,297 @@
+import {
+  CurrentWeatherResponse,
+  ForecastResponse,
+  ForecastDay,
+  WeatherGovPoint,
+  WeatherGovForecast,
+  WeatherGovObservation,
+  WeatherGovForecastPeriod,
+} from '@/types/weather';
+
+const conditionCodeMap: Record<string, number> = {
+  'Sunny': 1000,
+  'Clear': 1000,
+  'Fair': 1000,
+  'Partly Cloudy': 1003,
+  'Partly Sunny': 1003,
+  'Mostly Clear': 1003,
+  'Cloudy': 1006,
+  'Overcast': 1009,
+  'Mostly Cloudy': 1006,
+  'Light Rain': 1183,
+  'Rain': 1186,
+  'Heavy Rain': 1192,
+  'Light Snow': 1210,
+  'Snow': 1213,
+  'Heavy Snow': 1219,
+  'Thunderstorms': 1087,
+  'Fog': 1147,
+  'Mist': 1147,
+  default: 1000,
+};
+
+function getConditionCode(text: string): number {
+  const lowerText = text.toLowerCase();
+  if (lowerText.includes('thunder') || lowerText.includes('t-storm')) return 1087;
+  if (lowerText.includes('heavy snow')) return 1219;
+  if (lowerText.includes('snow') && !lowerText.includes('light')) return 1213;
+  if (lowerText.includes('light snow') || lowerText.includes('flurries')) return 1210;
+  if (lowerText.includes('heavy rain')) return 1192;
+  if (lowerText.includes('rain') && !lowerText.includes('light')) return 1186;
+  if (lowerText.includes('light rain') || lowerText.includes('drizzle') || lowerText.includes('showers')) return 1183;
+  if (lowerText.includes('fog') || lowerText.includes('mist') || lowerText.includes('haze')) return 1147;
+  if (lowerText.includes('overcast') || lowerText.includes('mostly cloudy')) return 1009;
+  if (lowerText.includes('cloudy') || lowerText.includes('mostly clear')) return 1006;
+  if (lowerText.includes('partly') || lowerText.includes('partly sunny') || lowerText.includes('partly cloudy')) return 1003;
+  if (lowerText.includes('sunny') || lowerText.includes('clear') || lowerText.includes('fair')) return 1000;
+  return conditionCodeMap.default;
+}
+
+function parseWindSpeed(windSpeedStr: string): { mph: number; kph: number; direction: string } {
+  const mphMatch = windSpeedStr.match(/(\d+)\s*to\s*(\d+)\s*mph/i);
+  const singleMphMatch = windSpeedStr.match(/(\d+)\s*mph/i);
+  
+  let mph = 0;
+  let direction = 'N';
+  
+  if (mphMatch) {
+    mph = (parseInt(mphMatch[1]) + parseInt(mphMatch[2])) / 2;
+  } else if (singleMphMatch) {
+    mph = parseInt(singleMphMatch[1]);
+  }
+  
+  const kph = Math.round(mph * 1.60934);
+  
+  const dirMatch = windSpeedStr.match(/[A-Z]{3}/);
+  if (dirMatch) {
+    direction = dirMatch[0];
+  }
+  
+  return { mph, kph, direction };
+}
+
+function celsiusToFahrenheit(celsius: number): number {
+  return Math.round(celsius * 9 / 5 + 32);
+}
+
+function getWindDirection(degree: number): string {
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const index = Math.round(degree / 22.5) % 16;
+  return directions[index];
+}
+
+export class WeatherGovTransformer {
+  static transformPointToLocation(point: WeatherGovPoint, lat: number, lon: number): CurrentWeatherResponse['location'] {
+    const city = point.properties.relativeLocation.properties.city;
+    const state = point.properties.relativeLocation.properties.state;
+    const now = new Date();
+    
+    return {
+      name: city,
+      region: state,
+      country: 'US',
+      lat: lat,
+      lon: lon,
+      tz_id: point.properties.timeZone,
+      localtime_epoch: Math.floor(now.getTime() / 1000),
+      localtime: now.toLocaleString('en-US', { timeZone: point.properties.timeZone }),
+    };
+  }
+
+  static transformObservationToCurrentWeather(
+    observation: WeatherGovObservation,
+    location: CurrentWeatherResponse['location'],
+    forecast?: WeatherGovForecast
+  ): CurrentWeatherResponse['current'] {
+    const props = observation.properties;
+    const now = new Date();
+    
+    const tempC = props.temperature?.value ?? 0;
+    const tempF = celsiusToFahrenheit(tempC);
+    
+    const dewpointC = props.dewpoint?.value ?? 0;
+    const windSpeedKmh = props.windSpeed?.value ?? 0;
+    const windSpeedMph = Math.round(windSpeedKmh / 1.60934);
+    const windDegree = props.windDirection?.value ?? 0;
+    
+    const currentPeriod = forecast?.properties.periods.find(p => {
+      const start = new Date(p.startTime);
+      const end = new Date(p.endTime);
+      return now >= start && now <= end;
+    });
+
+    const isDay = currentPeriod?.isDaytime ? 1 : 0;
+    
+    const conditionText = props.textDescription || 'Clear';
+    const conditionCode = getConditionCode(conditionText);
+    
+    const iconUrl = props.icon || `https://api.weather.gov/icons/land/${isDay ? 'day' : 'night'}/skc?size=medium`;
+
+    const pressurePa = props.barometricPressure?.value ?? 101325;
+    const pressureMb = Math.round(pressurePa / 100);
+    const pressureIn = Math.round((pressureMb / 33.864) * 100) / 100;
+
+    return {
+      last_updated_epoch: Math.floor(new Date(props.timestamp).getTime() / 1000),
+      last_updated: props.timestamp,
+      temp_c: tempC,
+      temp_f: tempF,
+      is_day: isDay,
+      condition: {
+        text: conditionText,
+        icon: iconUrl,
+        code: conditionCode,
+      },
+      wind_mph: windSpeedMph,
+      wind_kph: Math.round(windSpeedKmh),
+      wind_degree: windDegree,
+      wind_dir: getWindDirection(windDegree),
+      pressure_mb: pressureMb,
+      pressure_in: pressureIn,
+      precip_mm: 0,
+      precip_in: 0,
+      humidity: props.relativeHumidity?.value ?? 50,
+      cloud: 0,
+      feelslike_c: tempC,
+      feelslike_f: tempF,
+      windchill_c: tempC,
+      windchill_f: tempF,
+      heatindex_c: tempC,
+      heatindex_f: tempF,
+      dewpoint_c: dewpointC,
+      dewpoint_f: celsiusToFahrenheit(dewpointC),
+      vis_km: props.visibility?.value ?? 10,
+      vis_miles: Math.round((props.visibility?.value ?? 10) / 1.60934 * 10) / 10,
+      uv: currentPeriod?.isDaytime ? 5 : 0,
+      gust_mph: 0,
+      gust_kph: 0,
+    };
+  }
+
+  static transformForecastToResponse(
+    point: WeatherGovPoint,
+    observation: WeatherGovObservation,
+    forecast: WeatherGovForecast
+  ): ForecastResponse {
+    const lat = point.geometry.coordinates[1] as number;
+    const lon = point.geometry.coordinates[0] as number;
+    const location = this.transformPointToLocation(point, lat, lon);
+    const current = this.transformObservationToCurrentWeather(observation, location, forecast);
+    
+    const forecastDays = this.transformForecastPeriods(forecast.properties.periods);
+    
+    return {
+      location,
+      current,
+      forecast: {
+        forecastday: forecastDays,
+      },
+    };
+  }
+
+  static transformForecastPeriods(periods: WeatherGovForecastPeriod[]): ForecastDay[] {
+    const days: Map<string, { date: string; date_epoch: number; daytime: WeatherGovForecastPeriod | null; nighttime: WeatherGovForecastPeriod | null }> = new Map();
+    
+    periods.forEach((period) => {
+      const date = new Date(period.startTime).toISOString().split('T')[0];
+      
+      if (!days.has(date)) {
+        days.set(date, {
+          date,
+          date_epoch: Math.floor(new Date(date).getTime() / 1000),
+          daytime: null,
+          nighttime: null,
+        });
+      }
+      
+      const dayData = days.get(date)!;
+      if (period.isDaytime) {
+        dayData.daytime = period;
+      } else {
+        dayData.nighttime = period;
+      }
+    });
+    
+    const forecastDays = Array.from(days.values())
+      .map(({ date, date_epoch, daytime, nighttime }) => {
+        const dayPeriod = daytime || nighttime;
+        const tempF = dayPeriod?.temperature || 60;
+
+        let maxTempF = tempF;
+        let minTempF = tempF;
+        
+        if (daytime && nighttime) {
+          maxTempF = Math.max(daytime.temperature, nighttime.temperature);
+          minTempF = Math.min(daytime.temperature, nighttime.temperature);
+        }
+        
+        const maxTempC = Math.round((maxTempF - 32) * 5 / 9);
+        const minTempC = Math.round((minTempF - 32) * 5 / 9);
+        
+        const conditionText = dayPeriod?.shortForecast || 'Clear';
+        const conditionCode = getConditionCode(conditionText);
+        
+        const { mph: windMph, kph: windKph } = parseWindSpeed(dayPeriod?.windSpeed || '5 mph');
+        
+        const pop = dayPeriod?.probabilityOfPrecipitation.value ?? 0;
+        
+        const midnightDate = new Date(date);
+        midnightDate.setHours(0, 0, 0, 0);
+        const sunriseDate = new Date(midnightDate);
+        sunriseDate.setHours(6, 30, 0, 0);
+        const sunsetDate = new Date(midnightDate);
+        sunsetDate.setHours(18, 0, 0, 0);
+        
+        return {
+          date,
+          date_epoch,
+          day: {
+            maxtemp_c: maxTempC,
+            maxtemp_f: maxTempF,
+            mintemp_c: minTempC,
+            mintemp_f: minTempF,
+            avgtemp_c: Math.round((maxTempC + minTempC) / 2),
+            avgtemp_f: Math.round((maxTempF + minTempF) / 2),
+            maxwind_mph: windMph + 5,
+            maxwind_kph: windKph + 8,
+            totalprecip_mm: Math.round((pop / 100) * 10) / 10,
+            totalprecip_in: Math.round(((pop / 100) * 10) / 25.4 * 100) / 100,
+            totalsnow_cm: 0,
+            avgvis_km: 10,
+            avgvis_miles: 6,
+            avghumidity: 60,
+            daily_will_it_rain: pop > 30 ? 1 : 0,
+            daily_chance_of_rain: pop,
+            daily_will_it_snow: 0,
+            daily_chance_of_snow: 0,
+            condition: {
+              text: conditionText,
+              icon: dayPeriod?.icon || `https://api.weather.gov/icons/land/day/skc?size=medium`,
+              code: conditionCode,
+            },
+            uv: 5,
+          },
+          astro: {
+            sunrise: sunriseDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).replace(' ', ''),
+            sunset: sunsetDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).replace(' ', ''),
+            moonrise: '08:00 PM',
+            moonset: '06:00 AM',
+            moon_phase: 'Waxing Gibbous',
+            moon_illumination: 75,
+            is_moon_up: 1,
+            is_sun_up: 1,
+          },
+          hour: [],
+        };
+      })
+      .filter(day => {
+        const dayDate = new Date(day.date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return dayDate >= today;
+      })
+      .slice(0, 5);
+    
+    return forecastDays;
+  }
+}

@@ -128,6 +128,8 @@ export const useWeatherHistoryCache = () => {
             moonset: '12:00 PM',
             moon_phase: 'Full Moon',
             moon_illumination: 100,
+            is_moon_up: 1,
+            is_sun_up: 1,
           },
           hour: [],
         };
@@ -166,13 +168,9 @@ export const useWeatherHistoryCache = () => {
           if (!newHistoricalData[location]) {
             newHistoricalData[location] = {};
           }
-          
-          newHistoricalData[location][date] = {
-            forecast: historicalDay,
-            location,
-            date,
-          };
-          
+
+          newHistoricalData[location][date] = historicalDay;
+
           return {
             ...prev,
             historicalData: newHistoricalData,
@@ -264,6 +262,8 @@ export const useWeatherHistoryCache = () => {
                 moonset: '12:00 PM',
                 moon_phase: 'Full Moon',
                 moon_illumination: 100,
+                is_moon_up: 1,
+                is_sun_up: 1,
               },
               hour: [],
             };

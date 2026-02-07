@@ -1,5 +1,5 @@
 import { extendForecastToFiveDays } from './forecast-extension';
-import { ForecastResponse } from '@/types/weather';
+import { ForecastResponse, ForecastDay } from '@/types/weather';
 
 describe('Forecast Extension Utility', () => {
   const createMockForecastDay = (date: string, maxTemp: number, minTemp: number) => ({
@@ -44,7 +44,7 @@ describe('Forecast Extension Utility', () => {
     hour: []
   });
 
-  const createMockResponse = (days: any[]): ForecastResponse => ({
+  const createMockResponse = (days: ForecastDay[]): ForecastResponse => ({
     location: {
       name: 'Test City',
       region: 'Test Region',
@@ -173,7 +173,7 @@ describe('Forecast Extension Utility', () => {
     expect(extended.forecast.forecastday[0].day.maxtemp_c).toBe(20);
   });
 
-  function createMockForecastResponse(days: any[]): ForecastResponse {
+  function createMockForecastResponse(days: ForecastDay[]): ForecastResponse {
     return createMockResponse(days);
   }
 });

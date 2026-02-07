@@ -1,13 +1,12 @@
 import { z } from 'zod';
 
-// Base schemas
-export const conditionSchema = z.object({
+const conditionSchema = z.object({
   text: z.string(),
   icon: z.string(),
   code: z.number(),
 });
 
-export const locationSchema = z.object({
+const locationSchema = z.object({
   name: z.string(),
   region: z.string(),
   country: z.string(),
@@ -18,7 +17,7 @@ export const locationSchema = z.object({
   localtime: z.string(),
 });
 
-export const currentWeatherSchema = z.object({
+const currentWeatherSchema = z.object({
   last_updated_epoch: z.number(),
   last_updated: z.string(),
   temp_c: z.number(),
@@ -50,7 +49,7 @@ export const currentWeatherSchema = z.object({
   gust_kph: z.number(),
 });
 
-export const forecastDaySchema = z.object({
+const forecastDaySchema = z.object({
   date: z.string(),
   date_epoch: z.number(),
   day: z.object({
@@ -122,7 +121,6 @@ export const forecastDaySchema = z.object({
   ),
 });
 
-// Response schemas
 export const currentWeatherResponseSchema = z.object({
   location: locationSchema,
   current: currentWeatherSchema,
@@ -143,7 +141,67 @@ export const weatherErrorSchema = z.object({
   }),
 });
 
-// Type exports
 export type CurrentWeatherResponse = z.infer<typeof currentWeatherResponseSchema>;
 export type ForecastResponse = z.infer<typeof forecastResponseSchema>;
 export type WeatherError = z.infer<typeof weatherErrorSchema>;
+
+const weatherGovForecastPeriodSchema = z.object({
+  number: z.number(),
+  name: z.string(),
+  startTime: z.string(),
+  endTime: z.string(),
+  isDaytime: z.boolean(),
+  temperature: z.number(),
+  temperatureUnit: z.string(),
+  probabilityOfPrecipitation: z.object({
+    value: z.number().nullable(),
+  }),
+  windSpeed: z.string(),
+  windDirection: z.string(),
+  icon: z.string(),
+  shortForecast: z.string(),
+  detailedForecast: z.string().optional(),
+});
+
+export const weatherGovForecastSchema = z.object({
+  properties: z.object({
+    periods: z.array(weatherGovForecastPeriodSchema),
+  }),
+});
+
+const weatherGovObservationPropertiesSchema = z.object({
+  timestamp: z.string(),
+  textDescription: z.string(),
+  icon: z.string(),
+  temperature: z.object({
+    value: z.number().optional(),
+  }).optional(),
+  dewpoint: z.object({
+    value: z.number().optional(),
+  }).optional(),
+  windDirection: z.object({
+    value: z.number().optional(),
+  }).optional(),
+  windSpeed: z.object({
+    value: z.number().optional(),
+  }).optional(),
+  windGust: z.object({
+    value: z.number().nullable().optional(),
+  }).optional(),
+  barometricPressure: z.object({
+    value: z.number().optional(),
+  }).optional(),
+  relativeHumidity: z.object({
+    value: z.number().optional(),
+  }).optional(),
+  visibility: z.object({
+    value: z.number().optional(),
+  }).optional(),
+});
+
+export const weatherGovObservationSchema = z.object({
+  properties: weatherGovObservationPropertiesSchema,
+});
+
+export type WeatherGovForecast = z.infer<typeof weatherGovForecastSchema>;
+export type WeatherGovObservation = z.infer<typeof weatherGovObservationSchema>;
