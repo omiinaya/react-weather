@@ -44,11 +44,17 @@ export const formatWindSpeed = (speed: number, unit: 'metric' | 'imperial' = 'me
   return unit === 'metric' ? `${speed} km/h` : `${speed} mph`;
 };
 
-// Utility function to format date
-export const formatDate = (dateString: string, options: Intl.DateTimeFormatOptions = {
-  weekday: 'short',
-  month: 'short',
-  day: 'numeric'
-}): string => {
-  return new Date(dateString).toLocaleDateString('en-US', options);
+// Utility function to format date - display exactly as YYYY-MM-DD without timezone conversion
+export const formatDate = (dateString: string, options?: Intl.DateTimeFormatOptions): string => {
+  // Parse the date string directly
+  const [year, month, day] = dateString.split('-').map(Number);
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  
+  // Create date using UTC to avoid timezone shifts
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const weekday = options?.weekday ? dayNames[date.getUTCDay()] + ', ' : '';
+  const monthStr = options?.month ? monthNames[month - 1] : '';
+  const dayStr = options?.day ? ' ' + day : '';
+  return `${weekday}${monthStr}${dayStr}`;
 };

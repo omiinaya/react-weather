@@ -1,9 +1,7 @@
 'use client';
 
-import React, { useMemo, useEffect } from 'react';
+import React from 'react';
 import { UnifiedWeather } from '@/components/UnifiedWeather';
-import { useWeatherHistoryCache } from '@/hooks/useWeatherHistoryCache';
-import { createFiveDayHistoricalForecast } from '@/lib/utils/weather-history-utils';
 import { CurrentWeatherResponse, ForecastResponse } from '@/types/weather';
 
 interface WeatherContainerProps {
@@ -29,53 +27,16 @@ export const WeatherContainer: React.FC<WeatherContainerProps> = ({
   timeFormat = '12hr',
   pressureUnit = 'mb',
 }) => {
-  const { historicalData, storeHistoricalData } = useWeatherHistoryCache();
-
-  // Store new weather data in historical cache
-  useEffect(() => {
-    if (currentData && forecastData && location) {
-      storeHistoricalData(location, forecastData, currentData);
-    }
-  }, [currentData, forecastData, location, storeHistoricalData]);
-
-  // Create 5-day historical forecast
-  const fiveDayForecast = useMemo(() => {
-    if (!forecastData || !location) {
-      return null;
-    }
-
-    return createFiveDayHistoricalForecast(
-      location,
-      forecastData,
-      historicalData[location] || {}
-    );
-  }, [forecastData, historicalData, location, currentData]);
-
-  // Transform 5-day forecast to match expected ForecastResponse format
-  const enhancedForecastData = useMemo(() => {
-    if (!fiveDayForecast || !forecastData) {
-      return forecastData;
-    }
-
-    return {
-      ...forecastData,
-      forecast: {
-        ...forecastData.forecast,
-        forecastday: fiveDayForecast.days,
-      },
-    };
-  }, [fiveDayForecast, forecastData]);
-
   return (
     <UnifiedWeather
       currentData={currentData}
-      forecastData={enhancedForecastData}
+      forecastData={forecastData}
       isLoading={isLoading}
       error={error}
       temperatureUnit={temperatureUnit}
       windSpeedUnit={windSpeedUnit}
       timeFormat={timeFormat}
-        pressureUnit={pressureUnit}
-      />
+      pressureUnit={pressureUnit}
+    />
   );
 };

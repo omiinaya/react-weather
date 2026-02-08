@@ -89,7 +89,7 @@ export class WeatherAPIService {
     return data;
   }
 
-  async getForecast(
+    async getForecast(
     location: string | { lat: number; lon: number },
     _days?: number
   ): Promise<ForecastResponse> {

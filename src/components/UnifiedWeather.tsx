@@ -168,51 +168,30 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
             5-Day Weather Overview
           </h3>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-            {/* Actual forecast data - all 5 days aligned correctly */}
-            {forecastDays.slice(0, 5).map((day) => {
-              const maxTemp = temperatureUnit === 'celsius' ? day.day.maxtemp_c : day.day.maxtemp_f;
-              const minTemp = temperatureUnit === 'celsius' ? day.day.mintemp_c : day.day.mintemp_f;
-              const chanceOfRain = day.day.daily_chance_of_rain;
-              const chanceOfSnow = day.day.daily_chance_of_snow;
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+              {/* Show first 5 days from API */}
+              {forecastDays.slice(0, 5).map((day, index) => {
+                const maxTemp = temperatureUnit === 'celsius' ? day.day.maxtemp_c : day.day.maxtemp_f;
+                const minTemp = temperatureUnit === 'celsius' ? day.day.mintemp_c : day.day.mintemp_f;
+                const chanceOfRain = day.day.daily_chance_of_rain;
+                const chanceOfSnow = day.day.daily_chance_of_snow;
 
-              // Use actual current date for correct labeling
-              const actualToday = new Date();
-              actualToday.setHours(0, 0, 0, 0); // Normalize to midnight for consistent comparison
-              const dayDate = new Date(day.date);
-              dayDate.setHours(0, 0, 0, 0); // Normalize API date to midnight
-              
-              const diffDays = Math.floor((dayDate.getTime() - actualToday.getTime()) / (1000 * 60 * 60 * 24));
-              
-              let label;
-              if (diffDays === 0) {
-                label = 'Today';
-              } else if (diffDays === 1) {
-                label = 'Tomorrow';
-              } else if (diffDays === 2) {
-                label = 'In 2 days';
-              } else if (diffDays === -1) {
-                label = 'Yesterday';
-              } else if (diffDays === -2) {
-                label = '2 days ago';
-              } else if (diffDays < 0) {
-                label = `${Math.abs(diffDays)} days ago`;
-              } else {
-                label = `In ${diffDays} days`;
-              }
+                // Simple labels based on position
+                const labels = ['Today', 'Tomorrow', 'In 2 days', 'In 3 days', 'In 4 days'];
+                const label = labels[index] || `Day ${index + 1}`;
 
               {/* Date alignment is now calculated correctly based on actual API response */}
 
               return (
                 <div
-                  key={day.date}
-                  className={cn(
-                    'weather-card p-3 sm:p-4 text-center transition-all duration-300',
-                    'hover:scale-105 hover:shadow-md',
-                    diffDays === 0 && 'ring-2 ring-primary/50 bg-primary/5'
-                  )}
-                  aria-label={`Forecast for ${formatDate(day.date)}`}
-                >
+                key={day.date}
+                className={cn(
+                  'weather-card p-3 sm:p-4 text-center transition-all duration-300',
+                  'hover:scale-105 hover:shadow-md',
+                  index === 0 && 'ring-2 ring-primary/50 bg-primary/5'
+                )}
+                aria-label={`Forecast for ${formatDate(day.date)}`}
+              >
                   {/* Date */}
                   <div className="mb-3 min-h-[44px] flex flex-col items-center justify-center">
                     <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs sm:text-sm mb-1">
@@ -223,16 +202,14 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
                         day: 'numeric'
                       })}</span>
                     </div>
-                    <span className={cn(
-                      'text-xs font-medium px-2 py-0.5 rounded-full',
-                      diffDays === 0
-                        ? 'text-primary bg-primary/10'
-                        : diffDays > 0
-                          ? 'text-green-600 bg-green-100 dark:bg-green-900/30'
-                          : 'text-amber-600 bg-amber-100 dark:bg-amber-900/30'
-                    )}>
-                      {label}
-                    </span>
+                <span className={cn(
+                  'text-xs font-medium px-2 py-0.5 rounded-full',
+                  index === 0
+                    ? 'text-primary bg-primary/10'
+                    : 'text-green-600 bg-green-100 dark:bg-green-900/30'
+                )}>
+                  {label}
+                </span>
                   </div>
 
                   {/* Weather Icon */}
@@ -256,24 +233,24 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
                   const isDayTime = checkIsDayTime(location?.localtime, sunData);
                   return (
                     <>
-                      <div className="flex items-center gap-1">
-                        <TrendingUp className="w-4 h-4 text-red-500" />
-                        <span className={isDayTime 
-                          ? "text-card-foreground font-bold text-sm sm:text-base" 
-                          : "text-muted-foreground text-sm sm:text-base"
-                        }>
-                          {formatTemperature(maxTemp, temperatureUnit)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <TrendingDown className="w-4 h-4 text-blue-500" />
-                        <span className={!isDayTime 
-                          ? "text-card-foreground font-bold text-xs sm:text-sm" 
-                          : "text-muted-foreground text-xs sm:text-sm"
-                        }>
-                          {formatTemperature(minTemp, temperatureUnit)}
-                        </span>
-                      </div>
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="w-4 h-4 text-red-500" />
+                  <span className={isDayTime && maxTemp !== 0
+                    ? "text-card-foreground font-bold text-sm sm:text-base" 
+                    : "text-muted-foreground text-sm sm:text-base"
+                  }>
+                    {maxTemp !== 0 ? formatTemperature(maxTemp, temperatureUnit) : "—"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <TrendingDown className="w-4 h-4 text-blue-500" />
+                  <span className={!isDayTime && minTemp !== 0
+                    ? "text-card-foreground font-bold text-xs sm:text-sm" 
+                    : "text-muted-foreground text-xs sm:text-sm"
+                  }>
+                    {minTemp !== 0 ? formatTemperature(minTemp, temperatureUnit) : "—"}
+                  </span>
+                </div>
                     </>
                   );
                 })()}

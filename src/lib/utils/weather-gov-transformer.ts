@@ -203,13 +203,21 @@ export class WeatherGovTransformer {
   static transformForecastPeriods(periods: WeatherGovForecastPeriod[]): ForecastDay[] {
     const days: Map<string, { date: string; date_epoch: number; daytime: WeatherGovForecastPeriod | null; nighttime: WeatherGovForecastPeriod | null }> = new Map();
     
+    // Debug: log first few periods
+    if (periods.length > 0) {
+      console.log('First period:', periods[0].name, periods[0].startTime, periods[0].temperature);
+      console.log('Last period:', periods[periods.length - 1].name, periods[periods.length - 1].startTime);
+    }
+
     periods.forEach((period) => {
-      const date = new Date(period.startTime).toISOString().split('T')[0];
-      
+      // Extract date from API response (which is in ISO format like "2025-02-08T01:00:00Z")
+      // Don't convert timezone - use the date as-is from the API
+      const date = period.startTime.split('T')[0];
+
       if (!days.has(date)) {
         days.set(date, {
           date,
-          date_epoch: Math.floor(new Date(date).getTime() / 1000),
+          date_epoch: Math.floor(new Date(date + 'T00:00:00Z').getTime() / 1000),
           daytime: null,
           nighttime: null,
         });
@@ -223,21 +231,20 @@ export class WeatherGovTransformer {
       }
     });
     
-      const forecastDays = Array.from(days.values())
+    const forecastDays = Array.from(days.values())
       .map(({ date, date_epoch, daytime, nighttime }) => {
         const dayPeriod = daytime || nighttime;
-        const tempF = dayPeriod?.temperature ?? 60;
 
-        let maxTempF = tempF;
-        let minTempF = tempF;
-        
-        if (daytime && nighttime) {
-          maxTempF = Math.max(daytime.temperature, nighttime.temperature);
-          minTempF = Math.min(daytime.temperature, nighttime.temperature);
-        }
-        
-        const maxTempC = Math.round((maxTempF - 32) * 5 / 9);
-        const minTempC = Math.round((minTempF - 32) * 5 / 9);
+        // Use daytime temp for "day" and nighttime temp for "night"
+        // Only use actual period data, don't cross-fallback between day/night
+        const maxTempF = daytime?.temperature ?? 0;
+        const minTempF = nighttime?.temperature ?? 0;
+
+        // Debug
+        console.log(`Transformed day ${date}: day=${daytime?.temperature}, night=${nighttime?.temperature}`);
+
+          const maxTempC = Math.round((maxTempF - 32) * 5 / 9);
+          const minTempC = Math.round((minTempF - 32) * 5 / 9);
         
         const conditionText = dayPeriod?.shortForecast ?? 'Clear';
         const conditionCode = getConditionCode(conditionText);

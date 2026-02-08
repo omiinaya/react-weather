@@ -238,16 +238,16 @@ export default function Home() {
             </div>
           )}
 
-          {/* Weather Container with Historical Data */}
-          <div className="w-full">
-            <WeatherContainer
-              currentData={currentWeatherData || null}
-              forecastData={forecastData || null}
-              location={currentWeatherData?.location?.name || (typeof location === 'string' ? location : '')}
-              isLoading={isLoading}
-              error={combinedError}
-              {...preferences}
-            />
+{/* Weather Container with Historical Data */}
+        <div className="w-full">
+          <WeatherContainer
+            currentData={currentWeatherData || null}
+            forecastData={forecastData || null}
+            location={currentWeatherData?.location?.name || (typeof location === 'string' ? location : '')}
+            isLoading={isLoading}
+            error={combinedError}
+            {...preferences}
+          />
           </div>
 
           {/* Footer - More Compact */}
