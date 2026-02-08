@@ -48,7 +48,7 @@ export default function Home() {
     refetch: refetchForecast,
   } = useQuery({
     queryKey: ['forecast', typeof location === 'string' ? location : `${location.lat},${location.lon}`],
-    queryFn: () => getWeatherAPIService().getForecast(location, 3),  // API limitation: only 3 days available
+    queryFn: () => getWeatherAPIService().getForecast(location),
     enabled: !!location,
     retry: 1,
   });

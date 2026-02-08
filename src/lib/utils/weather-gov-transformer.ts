@@ -128,11 +128,7 @@ export class WeatherGovTransformer {
       conditionCode = getConditionCode(conditionText);
       iconUrl = currentPeriod.icon || `https://api.weather.gov/icons/land/${isDay ? 'day' : 'night'}/skc?size=medium`;
     } else {
-      tempF = 70;
-      tempC = Math.round((tempF - 32) * 5 / 9);
-      conditionText = 'Clear';
-      conditionCode = getConditionCode(conditionText);
-      iconUrl = `https://api.weather.gov/icons/land/${isDay ? 'day' : 'night'}/skc?size=medium`;
+      throw new Error('Weather data unavailable - no observation or forecast data provided');
     }
 
     const dewpointC = props?.dewpoint?.value ?? Math.round(tempC - 10);
@@ -144,7 +140,7 @@ export class WeatherGovTransformer {
     const pressureMb = Math.round(pressurePa / 100);
     const pressureIn = Math.round((pressureMb / 33.864) * 100) / 100;
 
-    const lastUpdated = props?.timestamp || now.toISOString();
+    const lastUpdated = props?.timestamp || (currentPeriod?.startTime ?? now.toISOString());
 
     return {
       last_updated_epoch: Math.floor(new Date(lastUpdated).getTime() / 1000),
@@ -163,8 +159,8 @@ export class WeatherGovTransformer {
       wind_dir: getWindDirection(windDegree),
       pressure_mb: pressureMb,
       pressure_in: pressureIn,
-      precip_mm: 0,
-      precip_in: 0,
+      precip_mm: props?.textDescription?.toLowerCase().includes('rain') ? 1 : 0,
+      precip_in: props?.textDescription?.toLowerCase().includes('rain') ? 0.04 : 0,
       humidity: props?.relativeHumidity?.value ?? 50,
       cloud: 0,
       feelslike_c: tempC,
@@ -227,10 +223,10 @@ export class WeatherGovTransformer {
       }
     });
     
-    const forecastDays = Array.from(days.values())
+      const forecastDays = Array.from(days.values())
       .map(({ date, date_epoch, daytime, nighttime }) => {
         const dayPeriod = daytime || nighttime;
-        const tempF = dayPeriod?.temperature || 60;
+        const tempF = dayPeriod?.temperature ?? 60;
 
         let maxTempF = tempF;
         let minTempF = tempF;
@@ -243,19 +239,16 @@ export class WeatherGovTransformer {
         const maxTempC = Math.round((maxTempF - 32) * 5 / 9);
         const minTempC = Math.round((minTempF - 32) * 5 / 9);
         
-        const conditionText = dayPeriod?.shortForecast || 'Clear';
+        const conditionText = dayPeriod?.shortForecast ?? 'Clear';
         const conditionCode = getConditionCode(conditionText);
-        
-        const { mph: windMph, kph: windKph } = parseWindSpeed(dayPeriod?.windSpeed || '5 mph');
-        
-        const pop = dayPeriod?.probabilityOfPrecipitation.value ?? 0;
+        const { mph: windMph, kph: windKph } = parseWindSpeed(dayPeriod?.windSpeed ?? '5 mph');
+        const pop = dayPeriod?.probabilityOfPrecipitation?.value ?? 0;
         
         const midnightDate = new Date(date);
         midnightDate.setHours(0, 0, 0, 0);
-        const sunriseDate = new Date(midnightDate);
-        sunriseDate.setHours(6, 30, 0, 0);
-        const sunsetDate = new Date(midnightDate);
-        sunsetDate.setHours(18, 0, 0, 0);
+        
+        const isClear = conditionText.toLowerCase().includes('sunny') || conditionText.toLowerCase().includes('clear');
+        const visibilityKm = isClear ? 16 : 10;
         
         return {
           date,
@@ -267,34 +260,34 @@ export class WeatherGovTransformer {
             mintemp_f: minTempF,
             avgtemp_c: Math.round((maxTempC + minTempC) / 2),
             avgtemp_f: Math.round((maxTempF + minTempF) / 2),
-            maxwind_mph: windMph + 5,
-            maxwind_kph: windKph + 8,
-            totalprecip_mm: Math.round((pop / 100) * 10) / 10,
-            totalprecip_in: Math.round(((pop / 100) * 10) / 25.4 * 100) / 100,
+            maxwind_mph: windMph,
+            maxwind_kph: windKph,
+            totalprecip_mm: pop > 0 ? Math.round((pop / 100) * 25.4) / 10 : 0,
+            totalprecip_in: pop > 0 ? Math.round(((pop / 100) * 10) / 100 + 0.399) : 0,
             totalsnow_cm: 0,
-            avgvis_km: 10,
-            avgvis_miles: 6,
-            avghumidity: 60,
+            avgvis_km: visibilityKm,
+            avgvis_miles: Math.round(visibilityKm / 1.60934 * 10) / 10,
+            avghumidity: 65,
             daily_will_it_rain: pop > 30 ? 1 : 0,
             daily_chance_of_rain: pop,
             daily_will_it_snow: 0,
             daily_chance_of_snow: 0,
             condition: {
               text: conditionText,
-              icon: dayPeriod?.icon || `https://api.weather.gov/icons/land/day/skc?size=medium`,
+              icon: dayPeriod?.icon ?? `https://api.weather.gov/icons/land/day/skc?size=medium`,
               code: conditionCode,
             },
-            uv: 5,
+            uv: dayPeriod?.isDaytime ? 5 : 0,
           },
           astro: {
-            sunrise: sunriseDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).replace(' ', ''),
-            sunset: sunsetDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).replace(' ', ''),
-            moonrise: '08:00 PM',
-            moonset: '06:00 AM',
-            moon_phase: 'Waxing Gibbous',
-            moon_illumination: 75,
-            is_moon_up: 1,
-            is_sun_up: 1,
+            sunrise: '06:00 AM',
+            sunset: '06:00 PM',
+            moonrise: '12:00 AM',
+            moonset: '12:00 PM',
+            moon_phase: 'New',
+            moon_illumination: 0,
+            is_moon_up: 0,
+            is_sun_up: dayPeriod?.isDaytime ? 1 : 0,
           },
           hour: [],
         };

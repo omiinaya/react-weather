@@ -124,7 +124,7 @@ export class WeatherAPIService {
 
     const parsedResponse = forecastResponseSchema.parse(response);
 
-    return extendForecastToFiveDays(parsedResponse);
+    return extendForecastToFiveDays(parsedResponse, 5);
   }
 
   async getCurrentWeather(location: string | { lat: number; lon: number }): Promise<CurrentWeatherResponse> {
