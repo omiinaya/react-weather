@@ -1,5 +1,5 @@
-import { ForecastDay, CurrentWeatherResponse, ForecastResponse } from '@/types/weather';
-import { HistoricalForecastDay, FiveDayHistoricalForecast, DateRange } from '@/types/weather-history';
+import { ForecastDay, ForecastResponse } from '@/types/weather';
+import { HistoricalForecastDay, FiveDayHistoricalForecast } from '@/types/weather-history';
 
 /**
  * Generates date labels for the 5-day historical window
@@ -69,12 +69,10 @@ export function getFiveDayWindowDates(referenceDate: Date = new Date()): string[
 export function createFiveDayHistoricalForecast(
   location: string,
   forecastData: ForecastResponse,
-  historicalData: { [date: string]: ForecastDay },
-  currentData?: CurrentWeatherResponse
+  historicalData: { [date: string]: ForecastDay }
 ): FiveDayHistoricalForecast {
   const today = new Date();
   const windowDates = getFiveDayWindowDates(today);
-  const todayStr = today.toISOString().split('T')[0];
   
   const days: HistoricalForecastDay[] = [];
   const dateLabels = generateDateLabels(windowDates, today);

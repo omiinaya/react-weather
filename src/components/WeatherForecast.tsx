@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Calendar, CloudRain, Umbrella, Sun, Droplets } from 'lucide-react';
+import { Calendar, CloudRain, Umbrella, Sun, Droplets, TrendingUp, TrendingDown } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { WeatherCard, formatTemperature, formatDate } from './WeatherCard';
 import { ForecastResponse } from '@/types/weather';
@@ -14,7 +14,6 @@ interface WeatherForecastProps {
   isLoading?: boolean;
   error?: string | null;
   temperatureUnit?: 'celsius' | 'fahrenheit';
-  days?: number;
 }
 
 export const WeatherForecast: React.FC<WeatherForecastProps> = React.memo(({
@@ -22,7 +21,6 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = React.memo(({
   isLoading = false,
   error = null,
   temperatureUnit = 'celsius',
-  days = 5,
 }) => {
   if (isLoading) {
     return (
@@ -134,17 +132,23 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = React.memo(({
                 </p>
               </div>
 
-              {/* Temperatures */}
-              <div className="mb-4">
-                <div className="flex items-center justify-center gap-3">
+            {/* Temperatures */}
+            <div className="mb-4">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="w-4 h-4 text-red-500" />
                   <span className="text-card-foreground font-bold text-lg">
                     {formatTemperature(maxTemp, temperatureUnit)}
                   </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <TrendingDown className="w-4 h-4 text-blue-500" />
                   <span className="text-muted-foreground text-sm">
                     {formatTemperature(minTemp, temperatureUnit)}
                   </span>
                 </div>
               </div>
+            </div>
 
               {/* Precipitation */}
               {(chanceOfRain > 0 || chanceOfSnow > 0) && (

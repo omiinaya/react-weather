@@ -11,7 +11,9 @@ import {
   Clock,
   Calendar,
   CloudRain,
-  Umbrella
+  Umbrella,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun as faSolidSun, faMoon as faSolidMoon } from '@fortawesome/free-solid-svg-icons';
@@ -30,7 +32,6 @@ interface UnifiedWeatherProps {
   windSpeedUnit?: 'metric' | 'imperial';
   timeFormat?: '12hr' | '24hr';
   pressureUnit?: 'mb' | 'inHg';
-  days?: number;
   compactMode?: boolean;
   showLocationHeader?: boolean;
 }
@@ -44,7 +45,6 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
   windSpeedUnit = 'metric',
   timeFormat = '12hr',
   pressureUnit = 'mb',
-  days = 5,
   showLocationHeader = true,
 }) => {
   if (isLoading) {
@@ -170,7 +170,7 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
             {/* Actual forecast data - all 5 days aligned correctly */}
-            {forecastDays.slice(0, 5).map((day, index) => {
+            {forecastDays.slice(0, 5).map((day) => {
               const maxTemp = temperatureUnit === 'celsius' ? day.day.maxtemp_c : day.day.maxtemp_f;
               const minTemp = temperatureUnit === 'celsius' ? day.day.mintemp_c : day.day.mintemp_f;
               const chanceOfRain = day.day.daily_chance_of_rain;
@@ -249,17 +249,23 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
                     </p>
                   </div>
 
-                  {/* Temperatures */}
-                  <div className="mb-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-card-foreground font-bold text-sm sm:text-base">
-                        {formatTemperature(maxTemp, temperatureUnit)}
-                      </span>
-                      <span className="text-muted-foreground text-xs sm:text-sm">
-                        {formatTemperature(minTemp, temperatureUnit)}
-                      </span>
-                    </div>
-                  </div>
+            {/* Temperatures */}
+            <div className="mb-3">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="w-4 h-4 text-red-500" />
+                  <span className="text-card-foreground font-bold text-sm sm:text-base">
+                    {formatTemperature(maxTemp, temperatureUnit)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <TrendingDown className="w-4 h-4 text-blue-500" />
+                  <span className="text-muted-foreground text-xs sm:text-sm">
+                    {formatTemperature(minTemp, temperatureUnit)}
+                  </span>
+                </div>
+              </div>
+            </div>
 
                   {/* Precipitation */}
                   {(chanceOfRain > 0 || chanceOfSnow > 0) && (

@@ -146,9 +146,9 @@ export class WeatherAPIService {
 
     try {
       observation = await this.getCurrentObservation(point);
-    } catch (error) {
-      console.warn('Could not get current observation, using forecast as fallback');
-    }
+  } catch {
+    console.warn('Could not get current observation, using forecast as fallback');
+  }
 
     if (!observation) {
       try {
@@ -228,9 +228,9 @@ export class WeatherAPIService {
         lat: coords.lat,
         lon: coords.lon,
       }];
-    } catch (error) {
-      return [];
-    }
+  } catch {
+    return [];
+  }
   }
 
   private async geocodeLocation(location: string): Promise<{ lat: number; lon: number; state?: string; name?: string }> {

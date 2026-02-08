@@ -47,8 +47,7 @@ export const WeatherContainer: React.FC<WeatherContainerProps> = ({
     return createFiveDayHistoricalForecast(
       location,
       forecastData,
-      historicalData[location] || {},
-      currentData || undefined
+      historicalData[location] || {}
     );
   }, [forecastData, historicalData, location, currentData]);
 
@@ -76,8 +75,7 @@ export const WeatherContainer: React.FC<WeatherContainerProps> = ({
       temperatureUnit={temperatureUnit}
       windSpeedUnit={windSpeedUnit}
       timeFormat={timeFormat}
-      pressureUnit={pressureUnit}
-      days={5}
-    />
+        pressureUnit={pressureUnit}
+      />
   );
 };

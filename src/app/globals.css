@@ -181,6 +181,20 @@
   }
 }
 
+/* Spinner Animation - Explicit definition */
+@keyframes spinner-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-animation {
+  animation: spinner-spin 1s linear infinite;
+}
+
 /* Enhanced animations */
 @keyframes fadeInUp {
   from {
