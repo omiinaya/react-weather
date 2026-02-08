@@ -231,6 +231,9 @@ export class WeatherGovTransformer {
       }
     });
     
+    // Debug: Log all days before mapping
+    console.log('Days map contents:', Array.from(days.keys()));
+
     const forecastDays = Array.from(days.values())
       .map(({ date, date_epoch, daytime, nighttime }) => {
         const dayPeriod = daytime || nighttime;

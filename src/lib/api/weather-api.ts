@@ -11,7 +11,7 @@ import {
 } from '@/lib/validation/weather';
 import { extendForecastToFiveDays } from '@/lib/utils/forecast-extension';
 import { WeatherGovTransformer } from '@/lib/utils/weather-gov-transformer';
-import type { WeatherGovPoint, WeatherGovStations } from '@/types/weather';
+import type { WeatherGovPoint, WeatherGovStations, WeatherGovForecastPeriod } from '@/types/weather';
 
 const WEATHER_GOV_BASE_URL = 'https://api.weather.gov';
 
@@ -231,6 +231,30 @@ export class WeatherAPIService {
   } catch {
     return [];
   }
+  }
+
+  async getRawForecastPeriods(
+    location: string | { lat: number; lon: number }
+  ): Promise<WeatherGovForecastPeriod[]> {
+    let lat: number, lon: number;
+
+    if (typeof location === 'string') {
+      const coords = await this.geocodeLocation(location);
+      lat = coords.lat;
+      lon = coords.lon;
+    } else {
+      lat = location.lat;
+      lon = location.lon;
+    }
+
+    const point = await this.getPointData(lat, lon);
+
+    const forecastData = await this.makeRequest<{ properties?: { periods?: unknown[] } }>(
+      `/gridpoints/${point.properties.gridId}/${point.properties.gridX},${point.properties.gridY}/forecast`
+    );
+
+    const forecast = weatherGovForecastSchema.parse(forecastData);
+    return forecast.properties.periods;
   }
 
   private async geocodeLocation(location: string): Promise<{ lat: number; lon: number; state?: string; name?: string }> {

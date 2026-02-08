@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { UnifiedWeather } from '@/components/UnifiedWeather';
-import { CurrentWeatherResponse, ForecastResponse } from '@/types/weather';
+import { CurrentWeatherResponse, ForecastResponse, WeatherGovForecastPeriod } from '@/types/weather';
 
 interface WeatherContainerProps {
   currentData: CurrentWeatherResponse | null;
   forecastData: ForecastResponse | null;
+  rawForecastPeriods?: WeatherGovForecastPeriod[];
   location: string;
   isLoading?: boolean;
   error?: string | null;
@@ -19,6 +20,7 @@ interface WeatherContainerProps {
 export const WeatherContainer: React.FC<WeatherContainerProps> = ({
   currentData,
   forecastData,
+  rawForecastPeriods,
   location,
   isLoading = false,
   error = null,
@@ -31,6 +33,7 @@ export const WeatherContainer: React.FC<WeatherContainerProps> = ({
     <UnifiedWeather
       currentData={currentData}
       forecastData={forecastData}
+      rawForecastPeriods={rawForecastPeriods}
       isLoading={isLoading}
       error={error}
       temperatureUnit={temperatureUnit}

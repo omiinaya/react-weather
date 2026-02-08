@@ -53,6 +53,16 @@ export default function Home() {
     retry: 1,
   });
 
+  // Fetch raw forecast periods (no transformation)
+  const {
+    data: rawForecastPeriods,
+  } = useQuery({
+    queryKey: ['raw-forecast', typeof location === 'string' ? location : `${location.lat},${location.lon}`],
+    queryFn: () => getWeatherAPIService().getRawForecastPeriods(location),
+    enabled: !!location,
+    retry: 1,
+  });
+
   const handleLocationSelect = useCallback((selectedLocation: string | { lat: number; lon: number }) => {
     setLocation(selectedLocation);
   }, []);
@@ -243,6 +253,7 @@ export default function Home() {
           <WeatherContainer
             currentData={currentWeatherData || null}
             forecastData={forecastData || null}
+            rawForecastPeriods={rawForecastPeriods}
             location={currentWeatherData?.location?.name || (typeof location === 'string' ? location : '')}
             isLoading={isLoading}
             error={combinedError}

@@ -23,9 +23,30 @@ import { LoadingSpinner } from './LoadingSpinner';
 import { getWeatherIcon, extractConditionCode, isNightTime } from '@/lib/utils/weather-icons';
 import { cn } from '@/lib/utils/cn';
 
+interface RawForecastPeriod {
+  number: number;
+  name: string;
+  startTime: string;
+  endTime: string;
+  isDaytime: boolean;
+  temperature: number;
+  temperatureUnit: string;
+  temperatureTrend?: string | null;
+  probabilityOfPrecipitation: {
+    unitCode?: string;
+    value: number | null;
+  };
+  windSpeed: string;
+  windDirection: string;
+  icon: string;
+  shortForecast: string;
+  detailedForecast?: string;
+}
+
 interface UnifiedWeatherProps {
   currentData: CurrentWeatherResponse | null;
   forecastData: ForecastResponse | null;
+  rawForecastPeriods?: RawForecastPeriod[];
   isLoading?: boolean;
   error?: string | null;
   temperatureUnit?: 'celsius' | 'fahrenheit';
@@ -39,6 +60,7 @@ interface UnifiedWeatherProps {
 export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
   currentData,
   forecastData,
+  rawForecastPeriods,
   isLoading = false,
   error = null,
   temperatureUnit = 'celsius',
@@ -91,8 +113,10 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
     );
   }
 
-  const forecastDays = forecastData?.forecast?.forecastday || [];
-  
+  // Use raw forecast periods if available, otherwise fall back to transformed data
+  const rawForecastDays = convertRawPeriodsToForecastDays(rawForecastPeriods);
+  const forecastDays = rawForecastDays.length > 0 ? rawForecastDays : (forecastData?.forecast?.forecastday || []);
+
   const sunData: Astro | null = forecastDays[0]?.astro || null;
   const location = currentData?.location || forecastData?.location;
 
@@ -176,9 +200,28 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
                 const chanceOfRain = day.day.daily_chance_of_rain;
                 const chanceOfSnow = day.day.daily_chance_of_snow;
 
-                // Simple labels based on position
-                const labels = ['Today', 'Tomorrow', 'In 2 days', 'In 3 days', 'In 4 days'];
-                const label = labels[index] || `Day ${index + 1}`;
+                // Calculate label based on actual date
+                const today = new Date();
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                const [year, month, dayNum] = day.date.split('-').map(Number);
+                const dayDate = new Date(year, month - 1, dayNum);
+                const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const diffDays = Math.round((dayDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
+                
+                let label;
+                if (diffDays === 0) {
+                  label = 'Today';
+                } else if (diffDays === 1) {
+                  label = 'Tomorrow';
+                } else if (diffDays === 2) {
+                  label = 'In 2 days';
+                } else if (diffDays === 3) {
+                  label = 'In 3 days';
+                } else if (diffDays === 4) {
+                  label = 'In 4 days';
+                } else {
+                  label = day.date;
+                }
 
               {/* Date alignment is now calculated correctly based on actual API response */}
 
@@ -421,4 +464,76 @@ const checkIsDayTime = (localTime?: string, sunData?: Astro | null): boolean => 
   
   // Fallback: day is roughly 6 AM to 6 PM
   return currentHour >= 6 && currentHour < 18;
+};
+
+// Convert raw API periods to forecast day format
+const convertRawPeriodsToForecastDays = (periods: RawForecastPeriod[] | undefined) => {
+  if (!periods || periods.length === 0) return [];
+  
+  // Group periods by date
+  const days: { [date: string]: { daytime?: RawForecastPeriod; nighttime?: RawForecastPeriod } } = {};
+  
+  periods.forEach((period) => {
+    const date = period.startTime.split('T')[0];
+    if (!days[date]) {
+      days[date] = {};
+    }
+    if (period.isDaytime) {
+      days[date].daytime = period;
+    } else {
+      days[date].nighttime = period;
+    }
+  });
+  
+  // Convert to forecast day format
+  return Object.entries(days).slice(0, 5).map(([date, periods]) => {
+    const dayPeriod = periods.daytime || periods.nighttime;
+    const maxTempF = periods.daytime?.temperature ?? 0;
+    const minTempF = periods.nighttime?.temperature ?? 0;
+    const maxTempC = Math.round((maxTempF - 32) * 5 / 9);
+    const minTempC = Math.round((minTempF - 32) * 5 / 9);
+    const pop = dayPeriod?.probabilityOfPrecipitation?.value ?? 0;
+    
+    return {
+      date,
+      date_epoch: Math.floor(new Date(date).getTime() / 1000),
+      day: {
+        maxtemp_c: maxTempC,
+        maxtemp_f: maxTempF,
+        mintemp_c: minTempC,
+        mintemp_f: minTempF,
+        avgtemp_c: Math.round((maxTempC + minTempC) / 2),
+        avgtemp_f: Math.round((maxTempF + minTempF) / 2),
+        maxwind_mph: 10,
+        maxwind_kph: 16,
+        totalprecip_mm: 0,
+        totalprecip_in: 0,
+        totalsnow_cm: 0,
+        avgvis_km: 10,
+        avgvis_miles: 6,
+        avghumidity: 65,
+        daily_will_it_rain: pop > 30 ? 1 : 0,
+        daily_chance_of_rain: pop,
+        daily_will_it_snow: 0,
+        daily_chance_of_snow: 0,
+        condition: {
+          text: dayPeriod?.shortForecast || 'Clear',
+          icon: dayPeriod?.icon || '',
+          code: 1000,
+        },
+        uv: 5,
+      },
+      astro: {
+        sunrise: '06:00 AM',
+        sunset: '06:00 PM',
+        moonrise: '12:00 AM',
+        moonset: '12:00 PM',
+        moon_phase: 'Full Moon',
+        moon_illumination: 100,
+        is_moon_up: 1,
+        is_sun_up: 1,
+      },
+      hour: [],
+    };
+  });
 };
