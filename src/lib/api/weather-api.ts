@@ -6,6 +6,8 @@ import {
   weatherGovObservationSchema,
   type CurrentWeatherResponse,
   type ForecastResponse,
+  type WeatherGovForecast,
+  type WeatherGovObservation,
 } from '@/lib/validation/weather';
 import { extendForecastToFiveDays } from '@/lib/utils/forecast-extension';
 import { WeatherGovTransformer } from '@/lib/utils/weather-gov-transformer';
@@ -110,7 +112,13 @@ export class WeatherAPIService {
 
     const forecast = weatherGovForecastSchema.parse(forecastData);
 
-    const observation = await this.getCurrentObservation(point);
+    let observation: WeatherGovObservation | null = null;
+
+    try {
+      observation = await this.getCurrentObservation(point);
+    } catch {
+      console.warn('Could not get current observation for forecast, using forecast data only');
+    }
 
     const response = WeatherGovTransformer.transformForecastToResponse(point, observation, forecast);
 
@@ -123,20 +131,38 @@ export class WeatherAPIService {
     let lat: number, lon: number;
 
     if (typeof location === 'string') {
-      console.log('Geocoding location:', location);
       const coords = await this.geocodeLocation(location);
       lat = coords.lat;
       lon = coords.lon;
-      console.log('Geocoded to:', lat, lon);
     } else {
       lat = location.lat;
       lon = location.lon;
     }
 
     const point = await this.getPointData(lat, lon);
-    const observation = await this.getCurrentObservation(point);
+
+    let observation: WeatherGovObservation | null = null;
+    let forecastResponse: WeatherGovForecast | null = null;
+
+    try {
+      observation = await this.getCurrentObservation(point);
+    } catch (error) {
+      console.warn('Could not get current observation, using forecast as fallback');
+    }
+
+    if (!observation) {
+      try {
+        const forecastData = await this.makeRequest<{ properties?: { periods?: unknown[] } }>(
+          `/gridpoints/${point.properties.gridId}/${point.properties.gridX},${point.properties.gridY}/forecast`
+        );
+        forecastResponse = weatherGovForecastSchema.parse(forecastData);
+      } catch {
+        console.error('Failed to get forecast fallback');
+      }
+    }
+
     const locationData = WeatherGovTransformer.transformPointToLocation(point, lat, lon);
-    const currentWeather = WeatherGovTransformer.transformObservationToCurrentWeather(observation, locationData);
+    const currentWeather = WeatherGovTransformer.transformObservationToCurrentWeather(observation, locationData, forecastResponse || undefined);
 
     const response: CurrentWeatherResponse = {
       location: locationData,
@@ -159,11 +185,11 @@ export class WeatherAPIService {
       const stationsData = await this.makeRequest<WeatherGovStations>(
         `/gridpoints/${point.properties.gridId}/${point.properties.gridX},${point.properties.gridY}/stations`
       );
-      
+
       if (!stationsData.features || stationsData.features.length === 0) {
         throw new WeatherAPIError(404, 'No weather stations found for this location');
       }
-      
+
       const stationId = stationsData.features[0].properties.stationIdentifier;
       const observationData = await this.makeRequest<{ properties?: Record<string, unknown> }>(
         `/stations/${stationId}/observations/latest`
@@ -171,6 +197,13 @@ export class WeatherAPIService {
 
       return weatherGovObservationSchema.parse(observationData);
     } catch (error) {
+      if (error instanceof Error && error.name === 'ZodError') {
+        throw new WeatherAPIError(
+          500,
+          'Observation data validation failed',
+          error
+        );
+      }
       throw new WeatherAPIError(
         500,
         'Failed to get current weather observation',
@@ -186,31 +219,26 @@ export class WeatherAPIService {
 
     try {
       const coords = await this.geocodeLocation(query);
-      
+
       return [{
         id: 1,
-        name: this.extractCityFromQuery(query),
+        name: coords.name || this.extractCityFromQuery(query),
         region: coords.state || '',
         country: 'US',
         lat: coords.lat,
         lon: coords.lon,
       }];
     } catch (error) {
-      throw new WeatherAPIError(
-        500,
-        'Location search failed',
-        error
-      );
+      return [];
     }
   }
 
-  private async geocodeLocation(location: string): Promise<{ lat: number; lon: number; state?: string }> {
+  private async geocodeLocation(location: string): Promise<{ lat: number; lon: number; state?: string; name?: string }> {
     try {
       const searchUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
       const response = await axios.get(searchUrl, { timeout: 10000 });
 
       const results = response.data.results;
-      console.log('Geocoding results for', location, ':', results);
 
       if (!results || results.length === 0) {
         throw new WeatherAPIError(404, 'Location not found');
@@ -221,13 +249,12 @@ export class WeatherAPIService {
         lat: result.latitude,
         lon: result.longitude,
         state: result.admin1,
+        name: result.name,
       };
-    } catch (error) {
-      console.error('Geocoding error for', location, ':', error);
+    } catch {
       throw new WeatherAPIError(
         404,
-        'Could not geocode location',
-        error
+        'Could not geocode location'
       );
     }
   }

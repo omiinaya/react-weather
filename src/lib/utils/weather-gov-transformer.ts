@@ -3,10 +3,9 @@ import {
   ForecastResponse,
   ForecastDay,
   WeatherGovPoint,
-  WeatherGovForecast,
-  WeatherGovObservation,
   WeatherGovForecastPeriod,
 } from '@/types/weather';
+import type { WeatherGovForecast, WeatherGovObservation } from '@/lib/validation/weather';
 
 const conditionCodeMap: Record<string, number> = {
   'Sunny': 1000,
@@ -99,21 +98,13 @@ export class WeatherGovTransformer {
   }
 
   static transformObservationToCurrentWeather(
-    observation: WeatherGovObservation,
+    observation: WeatherGovObservation | null,
     location: CurrentWeatherResponse['location'],
     forecast?: WeatherGovForecast
   ): CurrentWeatherResponse['current'] {
-    const props = observation.properties;
+    const props = observation?.properties;
     const now = new Date();
-    
-    const tempC = props.temperature?.value ?? 0;
-    const tempF = celsiusToFahrenheit(tempC);
-    
-    const dewpointC = props.dewpoint?.value ?? 0;
-    const windSpeedKmh = props.windSpeed?.value ?? 0;
-    const windSpeedMph = Math.round(windSpeedKmh / 1.60934);
-    const windDegree = props.windDirection?.value ?? 0;
-    
+
     const currentPeriod = forecast?.properties.periods.find(p => {
       const start = new Date(p.startTime);
       const end = new Date(p.endTime);
@@ -121,19 +112,43 @@ export class WeatherGovTransformer {
     });
 
     const isDay = currentPeriod?.isDaytime ? 1 : 0;
-    
-    const conditionText = props.textDescription || 'Clear';
-    const conditionCode = getConditionCode(conditionText);
-    
-    const iconUrl = props.icon || `https://api.weather.gov/icons/land/${isDay ? 'day' : 'night'}/skc?size=medium`;
 
-    const pressurePa = props.barometricPressure?.value ?? 101325;
+    let tempC, tempF, conditionText, conditionCode, iconUrl;
+
+    if (observation && props) {
+      tempC = props.temperature?.value ?? 0;
+      tempF = celsiusToFahrenheit(tempC);
+      conditionText = props.textDescription || 'Clear';
+      conditionCode = getConditionCode(conditionText);
+      iconUrl = props.icon || `https://api.weather.gov/icons/land/${isDay ? 'day' : 'night'}/skc?size=medium`;
+    } else if (currentPeriod) {
+      tempF = currentPeriod.temperature;
+      tempC = Math.round((tempF - 32) * 5 / 9);
+      conditionText = currentPeriod.shortForecast || 'Clear';
+      conditionCode = getConditionCode(conditionText);
+      iconUrl = currentPeriod.icon || `https://api.weather.gov/icons/land/${isDay ? 'day' : 'night'}/skc?size=medium`;
+    } else {
+      tempF = 70;
+      tempC = Math.round((tempF - 32) * 5 / 9);
+      conditionText = 'Clear';
+      conditionCode = getConditionCode(conditionText);
+      iconUrl = `https://api.weather.gov/icons/land/${isDay ? 'day' : 'night'}/skc?size=medium`;
+    }
+
+    const dewpointC = props?.dewpoint?.value ?? Math.round(tempC - 10);
+    const windSpeedKmh = props?.windSpeed?.value ?? parseWindSpeed(currentPeriod?.windSpeed || '5 mph').kph;
+    const windSpeedMph = Math.round(windSpeedKmh / 1.60934);
+    const windDegree = props?.windDirection?.value ?? 0;
+
+    const pressurePa = props?.barometricPressure?.value ?? 101325;
     const pressureMb = Math.round(pressurePa / 100);
     const pressureIn = Math.round((pressureMb / 33.864) * 100) / 100;
 
+    const lastUpdated = props?.timestamp || now.toISOString();
+
     return {
-      last_updated_epoch: Math.floor(new Date(props.timestamp).getTime() / 1000),
-      last_updated: props.timestamp,
+      last_updated_epoch: Math.floor(new Date(lastUpdated).getTime() / 1000),
+      last_updated: lastUpdated,
       temp_c: tempC,
       temp_f: tempF,
       is_day: isDay,
@@ -150,7 +165,7 @@ export class WeatherGovTransformer {
       pressure_in: pressureIn,
       precip_mm: 0,
       precip_in: 0,
-      humidity: props.relativeHumidity?.value ?? 50,
+      humidity: props?.relativeHumidity?.value ?? 50,
       cloud: 0,
       feelslike_c: tempC,
       feelslike_f: tempF,
@@ -160,8 +175,8 @@ export class WeatherGovTransformer {
       heatindex_f: tempF,
       dewpoint_c: dewpointC,
       dewpoint_f: celsiusToFahrenheit(dewpointC),
-      vis_km: props.visibility?.value ?? 10,
-      vis_miles: Math.round((props.visibility?.value ?? 10) / 1.60934 * 10) / 10,
+      vis_km: props?.visibility?.value ?? 10,
+      vis_miles: Math.round((props?.visibility?.value ?? 10) / 1.60934 * 10) / 10,
       uv: currentPeriod?.isDaytime ? 5 : 0,
       gust_mph: 0,
       gust_kph: 0,
@@ -170,7 +185,7 @@ export class WeatherGovTransformer {
 
   static transformForecastToResponse(
     point: WeatherGovPoint,
-    observation: WeatherGovObservation,
+    observation: WeatherGovObservation | null,
     forecast: WeatherGovForecast
   ): ForecastResponse {
     const lat = point.geometry.coordinates[1] as number;

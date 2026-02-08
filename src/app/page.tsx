@@ -11,7 +11,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useWeatherPreferences } from '@/hooks/useWeatherPreferences';
 
 export default function Home() {
-  const [location, setLocation] = useState<string>('New York');
+  const [location, setLocation] = useState<string | { lat: number; lon: number }>('New York');
   const {
     preferences,
     toggleTemperatureUnit,
@@ -25,7 +25,6 @@ export default function Home() {
   // useEffect only runs on the client, so we can avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
-    console.log('Page component mounted');
   }, []);
 
   // Fetch current weather data
@@ -35,11 +34,8 @@ export default function Home() {
     error: currentWeatherError,
     refetch: refetchCurrentWeather,
   } = useQuery({
-    queryKey: ['current-weather', location],
-    queryFn: () => {
-      console.log('Fetching current weather for:', location);
-      return getWeatherAPIService().getCurrentWeather(location);
-    },
+    queryKey: ['current-weather', typeof location === 'string' ? location : `${location.lat},${location.lon}`],
+    queryFn: () => getWeatherAPIService().getCurrentWeather(location),
     enabled: !!location,
     retry: 1,
   });
@@ -51,13 +47,13 @@ export default function Home() {
     error: forecastErrorResponse,
     refetch: refetchForecast,
   } = useQuery({
-    queryKey: ['forecast', location],
+    queryKey: ['forecast', typeof location === 'string' ? location : `${location.lat},${location.lon}`],
     queryFn: () => getWeatherAPIService().getForecast(location, 3),  // API limitation: only 3 days available
     enabled: !!location,
     retry: 1,
   });
 
-  const handleLocationSelect = useCallback((selectedLocation: string) => {
+  const handleLocationSelect = useCallback((selectedLocation: string | { lat: number; lon: number }) => {
     setLocation(selectedLocation);
   }, []);
 
@@ -70,16 +66,12 @@ export default function Home() {
 
 
   const getErrorMessage = useCallback((error: unknown): string | null => {
-    console.log('getErrorMessage called with:', error);
     if (error instanceof WeatherAPIError) {
-      console.log('WeatherAPIError:', error.message);
       return error.message;
     }
     if (error instanceof Error) {
-      console.log('Error:', error.message);
       return error.message;
     }
-    console.log('Unknown error type, returning generic message');
     return 'An unexpected error occurred';
   }, []);
 
@@ -251,7 +243,7 @@ export default function Home() {
             <WeatherContainer
               currentData={currentWeatherData || null}
               forecastData={forecastData || null}
-              location={location}
+              location={currentWeatherData?.location?.name || (typeof location === 'string' ? location : '')}
               isLoading={isLoading}
               error={combinedError}
               {...preferences}

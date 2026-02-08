@@ -172,31 +172,31 @@ export const weatherGovForecastSchema = z.object({
 const weatherGovObservationPropertiesSchema = z.object({
   timestamp: z.string(),
   textDescription: z.string(),
-  icon: z.string(),
+  icon: z.string().nullable(),
   temperature: z.object({
-    value: z.number().optional(),
-  }).optional(),
+    value: z.number().nullable(),
+  }).nullable(),
   dewpoint: z.object({
-    value: z.number().optional(),
-  }).optional(),
+    value: z.number().nullable(),
+  }).nullable(),
   windDirection: z.object({
-    value: z.number().optional(),
-  }).optional(),
+    value: z.number().nullable(),
+  }).nullable(),
   windSpeed: z.object({
-    value: z.number().optional(),
-  }).optional(),
+    value: z.number().nullable(),
+  }).nullable(),
   windGust: z.object({
-    value: z.number().nullable().optional(),
-  }).optional(),
+    value: z.number().nullable(),
+  }).nullable(),
   barometricPressure: z.object({
-    value: z.number().optional(),
-  }).optional(),
+    value: z.number().nullable(),
+  }).nullable(),
   relativeHumidity: z.object({
-    value: z.number().optional(),
-  }).optional(),
+    value: z.number().nullable(),
+  }).nullable(),
   visibility: z.object({
-    value: z.number().optional(),
-  }).optional(),
+    value: z.number().nullable(),
+  }).nullable(),
 });
 
 export const weatherGovObservationSchema = z.object({

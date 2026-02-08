@@ -17,7 +17,7 @@ interface LocationSuggestion {
 }
 
 interface LocationSearchProps {
-  onLocationSelect: (location: string) => void;
+  onLocationSelect: (location: string | { lat: number; lon: number }) => void;
   isLoading?: boolean;
   className?: string;
   placeholder?: string;
@@ -34,9 +34,10 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFromSuggestion, setSelectedFromSuggestion] = useState(false);
 
   const searchLocations = useCallback(async (searchQuery: string) => {
-    if (searchQuery.length < 2) {
+    if (searchQuery.length < 2 || selectedFromSuggestion) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -47,8 +48,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
 
     try {
       const results = await getWeatherAPIService().searchLocations(searchQuery);
-      
-      // WeatherAPI search returns an array of locations
+
       if (Array.isArray(results)) {
         const locationSuggestions: LocationSuggestion[] = results.map((location: SearchLocation, index) => ({
           id: index,
@@ -58,7 +58,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
           lat: location.lat,
           lon: location.lon,
         }));
-        
+
         setSuggestions(locationSuggestions);
         setShowSuggestions(locationSuggestions.length > 0);
       }
@@ -70,7 +70,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
     } finally {
       setIsSearching(false);
     }
-  }, []);
+  }, [selectedFromSuggestion]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -82,24 +82,22 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
     return () => clearTimeout(timeoutId);
   }, [query, searchLocations]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-  };
-
   const handleSuggestionClick = (suggestion: LocationSuggestion) => {
-    console.log('Suggestion clicked:', suggestion);
     const locationString = `${suggestion.name}, ${suggestion.country}`;
     setQuery(locationString);
     setShowSuggestions(false);
-    console.log('Calling onLocationSelect with:', locationString);
-    onLocationSelect(locationString);
+    setSelectedFromSuggestion(true);
+    onLocationSelect({ lat: suggestion.lat, lon: suggestion.lon });
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedFromSuggestion(false);
+    setQuery(e.target.value);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    console.log('Form submitted, preventing default behavior');
     e.preventDefault();
     if (query.trim()) {
-      console.log('Calling onLocationSelect with:', query.trim());
       onLocationSelect(query.trim());
     }
   };
