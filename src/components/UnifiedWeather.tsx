@@ -252,18 +252,31 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
             {/* Temperatures */}
             <div className="mb-3">
               <div className="flex items-center justify-center gap-3">
-                <div className="flex items-center gap-1">
-                  <TrendingUp className="w-4 h-4 text-red-500" />
-                  <span className="text-card-foreground font-bold text-sm sm:text-base">
-                    {formatTemperature(maxTemp, temperatureUnit)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <TrendingDown className="w-4 h-4 text-blue-500" />
-                  <span className="text-muted-foreground text-xs sm:text-sm">
-                    {formatTemperature(minTemp, temperatureUnit)}
-                  </span>
-                </div>
+                {(() => {
+                  const isDayTime = checkIsDayTime(location?.localtime, sunData);
+                  return (
+                    <>
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="w-4 h-4 text-red-500" />
+                        <span className={isDayTime 
+                          ? "text-card-foreground font-bold text-sm sm:text-base" 
+                          : "text-muted-foreground text-sm sm:text-base"
+                        }>
+                          {formatTemperature(maxTemp, temperatureUnit)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <TrendingDown className="w-4 h-4 text-blue-500" />
+                        <span className={!isDayTime 
+                          ? "text-card-foreground font-bold text-xs sm:text-sm" 
+                          : "text-muted-foreground text-xs sm:text-sm"
+                        }>
+                          {formatTemperature(minTemp, temperatureUnit)}
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
 
@@ -410,4 +423,25 @@ const createTimeString = (timeStr: string): string => {
 // Utility function to format pressure based on unit preference - moved outside component
 const formatPressure = (current: CurrentWeatherType, unit: 'mb' | 'inHg' = 'mb'): string => {
   return unit === 'mb' ? `${current.pressure_mb} mb` : `${current.pressure_in} inHg`;
+};
+
+// Check if it's currently day time based on location's local time and sun data
+const checkIsDayTime = (localTime?: string, sunData?: Astro | null): boolean => {
+  if (!localTime) return true; // Default to day if no time available
+  
+  const now = new Date(localTime);
+  const currentHour = now.getHours();
+  
+  // If we have sun data, use sunrise/sunset for more accuracy
+  if (sunData?.sunrise && sunData?.sunset) {
+    const sunrise = createTimeString(sunData.sunrise);
+    const sunset = createTimeString(sunData.sunset);
+    const sunriseHour = new Date(sunrise).getHours();
+    const sunsetHour = new Date(sunset).getHours();
+    
+    return currentHour >= sunriseHour && currentHour < sunsetHour;
+  }
+  
+  // Fallback: day is roughly 6 AM to 6 PM
+  return currentHour >= 6 && currentHour < 18;
 };
