@@ -1,4 +1,4 @@
-import { extendForecastToFiveDays } from './forecast-extension';
+import { extendForecastToFiveDays } from '../lib/utils/forecast-extension';
 import { ForecastResponse, ForecastDay } from '@/types/weather';
 
 describe('Forecast Extension Utility', () => {

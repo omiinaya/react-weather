@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { UnifiedWeather } from './UnifiedWeather';
+import { UnifiedWeather } from '../components/UnifiedWeather';
 import { CurrentWeatherResponse, ForecastResponse } from '@/types/weather';
 
 // Mock data for testing
