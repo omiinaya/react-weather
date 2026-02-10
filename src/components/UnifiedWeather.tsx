@@ -337,10 +337,10 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
           <div>
             {/* Compact Weather Metrics Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              <WeatherMetric
-                icon={<Droplets className="w-4 h-4 text-blue-500" />}
-                label="Humidity"
-                value={`${currentData.current.humidity}%`}
+            <WeatherMetric
+              icon={<Droplets className="w-4 h-4 text-blue-500" />}
+              label="Humidity"
+              value={`${currentData.current.humidity.toFixed(2)}%`}
               />
 
               <WeatherMetric
