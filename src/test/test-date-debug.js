@@ -66,15 +66,6 @@ function simulateDateCalculations() {
     return labels;
   }
   
-  // Simulate formatDate function
-  function formatDate(dateString, options = {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric'
-  }) {
-    return new Date(dateString).toLocaleDateString('en-US', options);
-  }
-  
   const windowDates = getFiveDayWindowDates(mockToday);
   const labels = generateDateLabels(windowDates, mockToday);
   

@@ -202,7 +202,6 @@ export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
 
                 // Calculate label based on actual date
                 const today = new Date();
-                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                 const [year, month, dayNum] = day.date.split('-').map(Number);
                 const dayDate = new Date(year, month - 1, dayNum);
                 const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());

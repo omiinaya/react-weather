@@ -21,7 +21,6 @@ export const WeatherContainer: React.FC<WeatherContainerProps> = ({
   currentData,
   forecastData,
   rawForecastPeriods,
-  location,
   isLoading = false,
   error = null,
   temperatureUnit = 'celsius',

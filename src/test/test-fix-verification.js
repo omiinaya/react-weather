@@ -30,7 +30,7 @@ function testDateAlignment(forecastDays) {
   });
   
   console.log('\nNew alignment (correct):');
-  forecastDays.slice(0, 5).forEach((day, index) => {
+  forecastDays.slice(0, 5).forEach((day) => {
     const date = new Date(day.date);
     const formatted = date.toLocaleDateString('en-US', {
       weekday: 'short',

@@ -157,7 +157,7 @@ export const useWeatherHistoryCache = () => {
       
       // Note: This would require API key with history access
       // For now, we'll use the forecast endpoint with historical date parameter
-      const data = await service.getForecast(location, 1);
+      const data = await service.getForecast(location);
       
       if (data.forecast.forecastday.length > 0) {
         const historicalDay = data.forecast.forecastday[0];

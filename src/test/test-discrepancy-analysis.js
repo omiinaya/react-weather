@@ -61,7 +61,6 @@ function demonstrateIssue() {
   
   // Test timezone edge case
   console.log('\n=== TIMEZONE EDGE CASE TEST ===');
-  const now = new Date();
   const utcMidnight = new Date(Date.UTC(2025, 8, 16)); // Sep 16, 2025 UTC midnight
   const localMidnight = new Date(2025, 8, 16); // Sep 16, 2025 local midnight
   

@@ -90,8 +90,7 @@ export class WeatherAPIService {
   }
 
     async getForecast(
-    location: string | { lat: number; lon: number },
-    _days?: number
+    location: string | { lat: number; lon: number }
   ): Promise<ForecastResponse> {
     let lat: number, lon: number;
 
@@ -117,7 +116,7 @@ export class WeatherAPIService {
     try {
       observation = await this.getCurrentObservation(point);
     } catch {
-      console.warn('Could not get current observation for forecast, using forecast data only');
+      // Silent fallback - observation not available for forecast
     }
 
     const response = WeatherGovTransformer.transformForecastToResponse(point, observation, forecast);
