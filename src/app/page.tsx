@@ -132,7 +132,7 @@ export default function Home() {
 
           {/* Search Section - More Compact */}
           <div className="flex flex-col items-center mb-6 sm:mb-8 animate-slide-up">
-            <div className="w-full max-w-md mb-4" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full max-w-md mb-4" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} role="presentation">
               <LocationSearch
                onLocationSelect={handleLocationSelect}
                isLoading={isLoading}

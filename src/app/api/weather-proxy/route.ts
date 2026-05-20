@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 const WEATHER_GOV_BASE_URL = 'https://api.weather.gov';
 
 // Valid Weather.gov API path patterns
-const VALID_PATH_PATTERN = /^(?:\/points\/[-.\d]+,[-.\d]+\/|stations\/([A-Za-z0-9]+)\/observations\/latest|\/gridpoints\/([A-Z]{3})\/\d+,\d+\/(?:forecast|hourlyforecast))$/;
+const VALID_PATH_PATTERN = /^(?:(?:\/points\/[-.\d]+,[-.\d]+\/)|(?:stations\/([A-Za-z0-9]+)\/observations\/latest)|(?:\/gridpoints\/([A-Z]{3})\/\d+,\d+\/(?:forecast|hourlyforecast)))$/;
 const ALLOWED_API_PATHS = ['points', 'gridpoints', 'stations'];
 
 // Validate and sanitize the path parameter to prevent SSRF
 function validatePath(path: string): { isValid: boolean; sanitizedPath: string } {
   // Remove any null bytes or control characters
-  const sanitized = path.replace(/[\x00-\x1F\x7F]/g, '');
+  const sanitized = path.split('').filter(c => c.charCodeAt(0) >= 0x20 && c.charCodeAt(0) !== 0x7F).join('');
 
   // Prevent path traversal attacks
   if (sanitized.includes('..') || sanitized.includes('//')) {
