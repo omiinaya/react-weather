@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const conditionSchema = z.object({
   text: z.string(),
@@ -117,7 +117,7 @@ const forecastDaySchema = z.object({
       uv: z.number(),
       chance_of_rain: z.number(),
       chance_of_snow: z.number(),
-    })
+    }),
   ),
 });
 
@@ -141,7 +141,9 @@ export const weatherErrorSchema = z.object({
   }),
 });
 
-export type CurrentWeatherResponse = z.infer<typeof currentWeatherResponseSchema>;
+export type CurrentWeatherResponse = z.infer<
+  typeof currentWeatherResponseSchema
+>;
 export type ForecastResponse = z.infer<typeof forecastResponseSchema>;
 export type WeatherError = z.infer<typeof weatherErrorSchema>;
 
@@ -173,30 +175,46 @@ const weatherGovObservationPropertiesSchema = z.object({
   timestamp: z.string(),
   textDescription: z.string(),
   icon: z.string().nullable(),
-  temperature: z.object({
-    value: z.number().nullable(),
-  }).nullable(),
-  dewpoint: z.object({
-    value: z.number().nullable(),
-  }).nullable(),
-  windDirection: z.object({
-    value: z.number().nullable(),
-  }).nullable(),
-  windSpeed: z.object({
-    value: z.number().nullable(),
-  }).nullable(),
-  windGust: z.object({
-    value: z.number().nullable(),
-  }).nullable(),
-  barometricPressure: z.object({
-    value: z.number().nullable(),
-  }).nullable(),
-  relativeHumidity: z.object({
-    value: z.number().nullable(),
-  }).nullable(),
-  visibility: z.object({
-    value: z.number().nullable(),
-  }).nullable(),
+  temperature: z
+    .object({
+      value: z.number().nullable(),
+    })
+    .nullable(),
+  dewpoint: z
+    .object({
+      value: z.number().nullable(),
+    })
+    .nullable(),
+  windDirection: z
+    .object({
+      value: z.number().nullable(),
+    })
+    .nullable(),
+  windSpeed: z
+    .object({
+      value: z.number().nullable(),
+    })
+    .nullable(),
+  windGust: z
+    .object({
+      value: z.number().nullable(),
+    })
+    .nullable(),
+  barometricPressure: z
+    .object({
+      value: z.number().nullable(),
+    })
+    .nullable(),
+  relativeHumidity: z
+    .object({
+      value: z.number().nullable(),
+    })
+    .nullable(),
+  visibility: z
+    .object({
+      value: z.number().nullable(),
+    })
+    .nullable(),
 });
 
 export const weatherGovObservationSchema = z.object({

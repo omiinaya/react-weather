@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
-  size = 'md',
+  size = "md",
   className,
 }) => {
   const sizeStyles = {
-    sm: { width: '16px', height: '16px', borderWidth: '2px' },
-    md: { width: '32px', height: '32px', borderWidth: '3px' },
-    lg: { width: '48px', height: '48px', borderWidth: '4px' },
+    sm: { width: "16px", height: "16px", borderWidth: "2px" },
+    md: { width: "32px", height: "32px", borderWidth: "3px" },
+    lg: { width: "48px", height: "48px", borderWidth: "4px" },
   };
 
   const spinKeyframes = `
@@ -28,12 +28,12 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     <>
       <style>{spinKeyframes}</style>
       <div
-        className={`inline-block rounded-full border-solid ${className || ''}`}
+        className={`inline-block rounded-full border-solid ${className || ""}`}
         style={{
           ...sizeStyles[size],
-          borderColor: 'rgba(0, 0, 0, 0.1)',
-          borderTopColor: '#3b82f6',
-          animation: 'spin 1s linear infinite',
+          borderColor: "rgba(0, 0, 0, 0.1)",
+          borderTopColor: "#3b82f6",
+          animation: "spin 1s linear infinite",
         }}
         role="status"
         aria-label="Loading"
@@ -48,7 +48,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 export const LoadingOverlay: React.FC<{
   isLoading?: boolean;
   message?: string;
-}> = ({ isLoading = false, message = 'Loading...' }) => {
+}> = ({ isLoading = false, message = "Loading..." }) => {
   if (!isLoading) return null;
 
   return (

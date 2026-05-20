@@ -1,37 +1,37 @@
-import { extendForecastToFiveDays } from './forecast-extension';
-import { ForecastResponse } from '@/types/weather';
+import { extendForecastToFiveDays } from "./forecast-extension";
+import { ForecastResponse } from "@/types/weather";
 
 // Simple manual test function
 export function testForecastExtension() {
-  console.log('Testing forecast extension utility...');
+  console.log("Testing forecast extension utility...");
 
   // Create mock data
   const mockResponse: ForecastResponse = {
     location: {
-      name: 'Test City',
-      region: 'Test Region',
-      country: 'Test Country',
+      name: "Test City",
+      region: "Test Region",
+      country: "Test Country",
       lat: 40.7128,
-      lon: -74.0060,
-      tz_id: 'America/New_York',
+      lon: -74.006,
+      tz_id: "America/New_York",
       localtime_epoch: 1609459200,
-      localtime: '2021-01-01 12:00'
+      localtime: "2021-01-01 12:00",
     },
     current: {
       last_updated_epoch: 1609459200,
-      last_updated: '2021-01-01 12:00',
+      last_updated: "2021-01-01 12:00",
       temp_c: 20,
       temp_f: 68,
       is_day: 1,
       condition: {
-        text: 'Sunny',
-        icon: '//cdn.weatherapi.com/weather/64x64/day/113.png',
-        code: 1000
+        text: "Sunny",
+        icon: "//cdn.weatherapi.com/weather/64x64/day/113.png",
+        code: 1000,
       },
       wind_mph: 5,
       wind_kph: 8,
       wind_degree: 180,
-      wind_dir: 'S',
+      wind_dir: "S",
       pressure_mb: 1013,
       pressure_in: 29.9,
       precip_mm: 0,
@@ -50,12 +50,12 @@ export function testForecastExtension() {
       vis_miles: 6,
       gust_mph: 8,
       gust_kph: 13,
-      uv: 5
+      uv: 5,
     },
     forecast: {
       forecastday: [
         {
-          date: '2021-01-01',
+          date: "2021-01-01",
           date_epoch: 1609459200,
           day: {
             maxtemp_c: 20,
@@ -77,26 +77,26 @@ export function testForecastExtension() {
             daily_will_it_snow: 0,
             daily_chance_of_snow: 0,
             condition: {
-              text: 'Sunny',
-              icon: '//cdn.weatherapi.com/weather/64x64/day/113.png',
-              code: 1000
+              text: "Sunny",
+              icon: "//cdn.weatherapi.com/weather/64x64/day/113.png",
+              code: 1000,
             },
-            uv: 5
+            uv: 5,
           },
           astro: {
-            sunrise: '07:00 AM',
-            sunset: '05:00 PM',
-            moonrise: '08:00 PM',
-            moonset: '06:00 AM',
-            moon_phase: 'Waxing Crescent',
+            sunrise: "07:00 AM",
+            sunset: "05:00 PM",
+            moonrise: "08:00 PM",
+            moonset: "06:00 AM",
+            moon_phase: "Waxing Crescent",
             moon_illumination: 45,
             is_moon_up: 0,
-            is_sun_up: 1
+            is_sun_up: 1,
           },
-          hour: []
+          hour: [],
         },
         {
-          date: '2021-01-02',
+          date: "2021-01-02",
           date_epoch: 1609545600,
           day: {
             maxtemp_c: 22,
@@ -118,26 +118,26 @@ export function testForecastExtension() {
             daily_will_it_snow: 0,
             daily_chance_of_snow: 0,
             condition: {
-              text: 'Partly cloudy',
-              icon: '//cdn.weatherapi.com/weather/64x64/day/116.png',
-              code: 1003
+              text: "Partly cloudy",
+              icon: "//cdn.weatherapi.com/weather/64x64/day/116.png",
+              code: 1003,
             },
-            uv: 6
+            uv: 6,
           },
           astro: {
-            sunrise: '07:00 AM',
-            sunset: '05:00 PM',
-            moonrise: '09:00 PM',
-            moonset: '06:30 AM',
-            moon_phase: 'Waxing Crescent',
+            sunrise: "07:00 AM",
+            sunset: "05:00 PM",
+            moonrise: "09:00 PM",
+            moonset: "06:30 AM",
+            moon_phase: "Waxing Crescent",
             moon_illumination: 55,
             is_moon_up: 0,
-            is_sun_up: 1
+            is_sun_up: 1,
           },
-          hour: []
+          hour: [],
         },
         {
-          date: '2021-01-03',
+          date: "2021-01-03",
           date_epoch: 1609632000,
           day: {
             maxtemp_c: 19,
@@ -159,56 +159,58 @@ export function testForecastExtension() {
             daily_will_it_snow: 0,
             daily_chance_of_snow: 0,
             condition: {
-              text: 'Light rain',
-              icon: '//cdn.weatherapi.com/weather/64x64/day/296.png',
-              code: 1183
+              text: "Light rain",
+              icon: "//cdn.weatherapi.com/weather/64x64/day/296.png",
+              code: 1183,
             },
-            uv: 3
+            uv: 3,
           },
           astro: {
-            sunrise: '07:01 AM',
-            sunset: '05:01 PM',
-            moonrise: '10:00 PM',
-            moonset: '07:00 AM',
-            moon_phase: 'First Quarter',
+            sunrise: "07:01 AM",
+            sunset: "05:01 PM",
+            moonrise: "10:00 PM",
+            moonset: "07:00 AM",
+            moon_phase: "First Quarter",
             moon_illumination: 65,
             is_moon_up: 0,
-            is_sun_up: 1
+            is_sun_up: 1,
           },
-          hour: []
-        }
-      ]
-    }
+          hour: [],
+        },
+      ],
+    },
   };
 
   try {
     const extended = extendForecastToFiveDays(mockResponse);
-    
-    console.log('✅ Test successful!');
+
+    console.log("✅ Test successful!");
     console.log(`Original days: ${mockResponse.forecast.forecastday.length}`);
     console.log(`Extended days: ${extended.forecast.forecastday.length}`);
-    
+
     // Show all days
     extended.forecast.forecastday.forEach((day, index) => {
-      console.log(`Day ${index + 1}: ${day.date} - ${day.day.maxtemp_c}°C/${day.day.mintemp_c}°C - ${day.day.condition.text}`);
+      console.log(
+        `Day ${index + 1}: ${day.date} - ${day.day.maxtemp_c}°C/${day.day.mintemp_c}°C - ${day.day.condition.text}`,
+      );
     });
-    
+
     // Verify the extension
     if (extended.forecast.forecastday.length === 5) {
-      console.log('✅ Successfully extended to 5 days!');
+      console.log("✅ Successfully extended to 5 days!");
     } else {
-      console.error('❌ Failed to extend to 5 days');
+      console.error("❌ Failed to extend to 5 days");
     }
-    
+
     return true;
   } catch (error) {
-    console.error('❌ Test failed:', error);
+    console.error("❌ Test failed:", error);
     return false;
   }
 }
 
 // Run the test
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   // In browser
   testForecastExtension();
 } else {

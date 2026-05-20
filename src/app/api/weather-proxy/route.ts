@@ -1,23 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-const WEATHER_GOV_BASE_URL = 'https://api.weather.gov';
+const WEATHER_GOV_BASE_URL = "https://api.weather.gov";
 
 // Valid Weather.gov API path patterns
-const VALID_PATH_PATTERN = /^(?:(?:\/points\/[-.\d]+,[-.\d]+\/)|(?:stations\/([A-Za-z0-9]+)\/observations\/latest)|(?:\/gridpoints\/([A-Z]{3})\/\d+,\d+\/(?:forecast|hourlyforecast)))$/;
-const ALLOWED_API_PATHS = ['points', 'gridpoints', 'stations'];
+const VALID_PATH_PATTERN =
+  /^(?:(?:\/points\/[-.\d]+,[-.\d]+\/)|(?:stations\/([A-Za-z0-9]+)\/observations\/latest)|(?:\/gridpoints\/([A-Z]{3})\/\d+,\d+\/(?:forecast|hourlyforecast)))$/;
+const ALLOWED_API_PATHS = ["points", "gridpoints", "stations"];
 
 // Validate and sanitize the path parameter to prevent SSRF
-function validatePath(path: string): { isValid: boolean; sanitizedPath: string } {
+function validatePath(path: string): {
+  isValid: boolean;
+  sanitizedPath: string;
+} {
   // Remove any null bytes or control characters
-  const sanitized = path.split('').filter(c => c.charCodeAt(0) >= 0x20 && c.charCodeAt(0) !== 0x7F).join('');
+  const sanitized = path
+    .split("")
+    .filter((c) => c.charCodeAt(0) >= 0x20 && c.charCodeAt(0) !== 0x7f)
+    .join("");
 
   // Prevent path traversal attacks
-  if (sanitized.includes('..') || sanitized.includes('//')) {
+  if (sanitized.includes("..") || sanitized.includes("//")) {
     return { isValid: false, sanitizedPath: sanitized };
   }
 
   // Only allow specific API endpoints
-  const pathParts = sanitized.split('/').filter(Boolean);
+  const pathParts = sanitized.split("/").filter(Boolean);
   if (pathParts.length === 0) {
     return { isValid: false, sanitizedPath: sanitized };
   }
@@ -38,16 +45,22 @@ function validatePath(path: string): { isValid: boolean; sanitizedPath: string }
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const rawPath = searchParams.get('path');
+  const rawPath = searchParams.get("path");
 
   if (!rawPath) {
-    return NextResponse.json({ error: 'Path parameter required' }, { status: 400 });
+    return NextResponse.json(
+      { error: "Path parameter required" },
+      { status: 400 },
+    );
   }
 
   const { isValid, sanitizedPath } = validatePath(rawPath);
 
   if (!isValid) {
-    return NextResponse.json({ error: 'Invalid path parameter' }, { status: 403 });
+    return NextResponse.json(
+      { error: "Invalid path parameter" },
+      { status: 403 },
+    );
   }
 
   try {
@@ -59,19 +72,19 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'react-weather-app/1.0',
-        'Accept': 'application/geo+json',
+        "User-Agent": "react-weather-app/1.0",
+        Accept: "application/geo+json",
       },
       signal: controller.signal,
-      cache: 'no-store',
+      cache: "no-store",
     });
 
     clearTimeout(timeoutId);
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: 'Weather.gov API error', status: response.status },
-        { status: response.status }
+        { error: "Weather.gov API error", status: response.status },
+        { status: response.status },
       );
     }
 
@@ -79,16 +92,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error) {
     // Log error for monitoring but don't expose details to client
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    if (errorMessage.includes('abort')) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    if (errorMessage.includes("abort")) {
       return NextResponse.json(
-        { error: 'Request timeout', status: 504 },
-        { status: 504 }
+        { error: "Request timeout", status: 504 },
+        { status: 504 },
       );
     }
     return NextResponse.json(
-      { error: 'Failed to fetch from weather.gov' },
-      { status: 500 }
+      { error: "Failed to fetch from weather.gov" },
+      { status: 500 },
     );
   }
 }

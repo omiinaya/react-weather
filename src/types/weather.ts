@@ -155,7 +155,7 @@ export interface SearchLocation {
 }
 
 export interface WeatherGovPoint {
-  '@context': unknown[];
+  "@context": unknown[];
   id: string;
   type: string;
   geometry: {
@@ -163,8 +163,8 @@ export interface WeatherGovPoint {
     coordinates: number[];
   };
   properties: {
-    '@id': string;
-    '@type': string;
+    "@id": string;
+    "@type": string;
     cwa: string;
     type: string;
     forecastOffice: string;

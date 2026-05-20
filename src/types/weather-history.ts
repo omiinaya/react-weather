@@ -1,4 +1,4 @@
-import { ForecastDay } from './weather';
+import { ForecastDay } from "./weather";
 
 export interface HistoricalForecastDay extends ForecastDay {
   isHistorical?: boolean;

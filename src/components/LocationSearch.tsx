@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Search, MapPin } from 'lucide-react';
-import { cn } from '@/lib/utils/cn';
-import { LoadingSpinner } from './LoadingSpinner';
-import { getWeatherAPIService } from '@/lib/api/weather-api';
-import { SearchLocation } from '@/types/weather';
+import React, { useState, useCallback, useEffect } from "react";
+import { Search, MapPin } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
+import { LoadingSpinner } from "./LoadingSpinner";
+import { getWeatherAPIService } from "@/lib/api/weather-api";
+import { SearchLocation } from "@/types/weather";
 
 interface LocationSuggestion {
   id: number;
@@ -27,50 +27,56 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   onLocationSelect,
   isLoading = false,
   className,
-  placeholder = 'Search for a city...',
+  placeholder = "Search for a city...",
 }) => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedFromSuggestion, setSelectedFromSuggestion] = useState(false);
 
-  const searchLocations = useCallback(async (searchQuery: string) => {
-    if (searchQuery.length < 2 || selectedFromSuggestion) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    setIsSearching(true);
-    setError(null);
-
-    try {
-      const results = await getWeatherAPIService().searchLocations(searchQuery);
-
-      if (Array.isArray(results)) {
-        const locationSuggestions: LocationSuggestion[] = results.map((location: SearchLocation, index) => ({
-          id: index,
-          name: location.name,
-          region: location.region,
-          country: location.country,
-          lat: location.lat,
-          lon: location.lon,
-        }));
-
-        setSuggestions(locationSuggestions);
-        setShowSuggestions(locationSuggestions.length > 0);
+  const searchLocations = useCallback(
+    async (searchQuery: string) => {
+      if (searchQuery.length < 2 || selectedFromSuggestion) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
       }
-    } catch (err) {
-      setError('Failed to search locations');
-      console.error('Location search error:', err);
-      setSuggestions([]);
-      setShowSuggestions(false);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [selectedFromSuggestion]);
+
+      setIsSearching(true);
+      setError(null);
+
+      try {
+        const results =
+          await getWeatherAPIService().searchLocations(searchQuery);
+
+        if (Array.isArray(results)) {
+          const locationSuggestions: LocationSuggestion[] = results.map(
+            (location: SearchLocation, index) => ({
+              id: index,
+              name: location.name,
+              region: location.region,
+              country: location.country,
+              lat: location.lat,
+              lon: location.lon,
+            }),
+          );
+
+          setSuggestions(locationSuggestions);
+          setShowSuggestions(locationSuggestions.length > 0);
+        }
+      } catch (err) {
+        setError("Failed to search locations");
+        console.error("Location search error:", err);
+        setSuggestions([]);
+        setShowSuggestions(false);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [selectedFromSuggestion],
+  );
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -103,7 +109,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
   };
 
   return (
-    <div className={cn('relative w-full max-w-md', className)}>
+    <div className={cn("relative w-full max-w-md", className)}>
       <form onSubmit={handleSubmit} className="relative">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 z-10" />
@@ -113,13 +119,13 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
             onChange={handleInputChange}
             placeholder={placeholder}
             className={cn(
-              'w-full pl-10 pr-12 py-3 border rounded-lg',
-              'focus:ring-2 focus:ring-primary focus:border-transparent',
-              'bg-background/80 backdrop-blur-sm',
-              'text-foreground placeholder-muted-foreground',
-              'transition-all duration-200',
-              'hover:border-primary/50 focus:border-primary',
-              error && 'border-destructive focus:ring-destructive'
+              "w-full pl-10 pr-12 py-3 border rounded-lg",
+              "focus:ring-2 focus:ring-primary focus:border-transparent",
+              "bg-background/80 backdrop-blur-sm",
+              "text-foreground placeholder-muted-foreground",
+              "transition-all duration-200",
+              "hover:border-primary/50 focus:border-primary",
+              error && "border-destructive focus:ring-destructive",
             )}
             disabled={isLoading}
             aria-label="Search for location"
@@ -128,12 +134,12 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
             type="submit"
             disabled={isLoading || !query.trim()}
             className={cn(
-              'absolute right-2 top-1/2 transform -translate-y-1/2',
-              'p-2 rounded-md transition-all duration-200',
-              'hover:scale-105 hover:shadow-sm',
+              "absolute right-2 top-1/2 transform -translate-y-1/2",
+              "p-2 rounded-md transition-all duration-200",
+              "hover:scale-105 hover:shadow-sm",
               isLoading || !query.trim()
-                ? 'text-muted-foreground cursor-not-allowed'
-                : 'text-primary hover:bg-accent'
+                ? "text-muted-foreground cursor-not-allowed"
+                : "text-primary hover:bg-accent",
             )}
             aria-label="Search"
           >
@@ -145,9 +151,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
           </button>
         </div>
 
-        {error && (
-          <p className="mt-2 text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
       </form>
 
       {/* Suggestions dropdown */}
@@ -162,7 +166,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
                 handleSuggestionClick(suggestion);
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+                if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   e.stopPropagation();
                   handleSuggestionClick(suggestion);
@@ -171,7 +175,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({
               className="w-full px-4 py-3 text-left hover:bg-accent transition-all duration-200 flex items-center gap-3 group cursor-pointer"
               role="button"
               tabIndex={0}
-              aria-label={`Select ${suggestion.name}, ${suggestion.region ? suggestion.region + ', ' : ''}${suggestion.country}`}
+              aria-label={`Select ${suggestion.name}, ${suggestion.region ? suggestion.region + ", " : ""}${suggestion.country}`}
             >
               <MapPin className="w-4 h-4 text-muted-foreground group-hover:text-foreground flex-shrink-0 transition-colors" />
               <div className="flex-1 min-w-0">

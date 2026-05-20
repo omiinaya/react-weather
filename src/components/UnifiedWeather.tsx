@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   Droplets,
   Wind,
@@ -13,15 +13,32 @@ import {
   CloudRain,
   Umbrella,
   TrendingUp,
-  TrendingDown
-} from 'lucide-react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSun as faSolidSun, faMoon as faSolidMoon } from '@fortawesome/free-solid-svg-icons';
-import { WeatherCard, formatTemperature, formatWindSpeed, formatDate } from './WeatherCard';
-import { CurrentWeatherResponse, ForecastResponse, Astro, CurrentWeather as CurrentWeatherType } from '@/types/weather';
-import { LoadingSpinner } from './LoadingSpinner';
-import { getWeatherIcon, extractConditionCode, isNightTime } from '@/lib/utils/weather-icons';
-import { cn } from '@/lib/utils/cn';
+  TrendingDown,
+} from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSun as faSolidSun,
+  faMoon as faSolidMoon,
+} from "@fortawesome/free-solid-svg-icons";
+import {
+  WeatherCard,
+  formatTemperature,
+  formatWindSpeed,
+  formatDate,
+} from "./WeatherCard";
+import {
+  CurrentWeatherResponse,
+  ForecastResponse,
+  Astro,
+  CurrentWeather as CurrentWeatherType,
+} from "@/types/weather";
+import { LoadingSpinner } from "./LoadingSpinner";
+import {
+  getWeatherIcon,
+  extractConditionCode,
+  isNightTime,
+} from "@/lib/utils/weather-icons";
+import { cn } from "@/lib/utils/cn";
 
 interface RawForecastPeriod {
   number: number;
@@ -49,347 +66,417 @@ interface UnifiedWeatherProps {
   rawForecastPeriods?: RawForecastPeriod[];
   isLoading?: boolean;
   error?: string | null;
-  temperatureUnit?: 'celsius' | 'fahrenheit';
-  windSpeedUnit?: 'metric' | 'imperial';
-  timeFormat?: '12hr' | '24hr';
-  pressureUnit?: 'mb' | 'inHg';
+  temperatureUnit?: "celsius" | "fahrenheit";
+  windSpeedUnit?: "metric" | "imperial";
+  timeFormat?: "12hr" | "24hr";
+  pressureUnit?: "mb" | "inHg";
   compactMode?: boolean;
   showLocationHeader?: boolean;
 }
 
-export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(({
-  currentData,
-  forecastData,
-  rawForecastPeriods,
-  isLoading = false,
-  error = null,
-  temperatureUnit = 'celsius',
-  windSpeedUnit = 'metric',
-  timeFormat = '12hr',
-  pressureUnit = 'mb',
-  showLocationHeader = true,
-}) => {
-  if (isLoading) {
-    return (
-      <WeatherCard title="Weather Forecast" isLoading>
-        <div className="flex flex-col items-center justify-center py-12">
-          <LoadingSpinner size="lg" />
-          <p className="mt-4 text-muted-foreground">Loading weather data...</p>
-        </div>
-      </WeatherCard>
-    );
-  }
-
-  if (error) {
-    return (
-      <WeatherCard title="Weather Forecast">
-        <div className="text-center py-8">
-          <div className="text-destructive mb-3">
-            <div className="w-12 h-12 mx-auto bg-destructive/20 rounded-full flex items-center justify-center">
-              <span className="text-lg">⚠️</span>
-            </div>
+export const UnifiedWeather: React.FC<UnifiedWeatherProps> = React.memo(
+  ({
+    currentData,
+    forecastData,
+    rawForecastPeriods,
+    isLoading = false,
+    error = null,
+    temperatureUnit = "celsius",
+    windSpeedUnit = "metric",
+    timeFormat = "12hr",
+    pressureUnit = "mb",
+    showLocationHeader = true,
+  }) => {
+    if (isLoading) {
+      return (
+        <WeatherCard title="Weather Forecast" isLoading>
+          <div className="flex flex-col items-center justify-center py-12">
+            <LoadingSpinner size="lg" />
+            <p className="mt-4 text-muted-foreground">
+              Loading weather data...
+            </p>
           </div>
-          <p className="text-destructive font-medium mb-2">{error}</p>
-          <p className="text-muted-foreground text-sm">
-            Please try searching for another location.
-          </p>
-        </div>
-      </WeatherCard>
-    );
-  }
+        </WeatherCard>
+      );
+    }
 
-  if (!currentData && !forecastData) {
+    if (error) {
+      return (
+        <WeatherCard title="Weather Forecast">
+          <div className="text-center py-8">
+            <div className="text-destructive mb-3">
+              <div className="w-12 h-12 mx-auto bg-destructive/20 rounded-full flex items-center justify-center">
+                <span className="text-lg">⚠️</span>
+              </div>
+            </div>
+            <p className="text-destructive font-medium mb-2">{error}</p>
+            <p className="text-muted-foreground text-sm">
+              Please try searching for another location.
+            </p>
+          </div>
+        </WeatherCard>
+      );
+    }
+
+    if (!currentData && !forecastData) {
+      return (
+        <WeatherCard title="Weather Forecast">
+          <div className="text-center py-8">
+            <div className="text-primary mb-3">
+              <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+                <span className="text-xl">🌤️</span>
+              </div>
+            </div>
+            <p className="text-muted-foreground">
+              Search for a location to see weather information
+            </p>
+          </div>
+        </WeatherCard>
+      );
+    }
+
+    // Use raw forecast periods if available, otherwise fall back to transformed data
+    const rawForecastDays = convertRawPeriodsToForecastDays(rawForecastPeriods);
+    const forecastDays =
+      rawForecastDays.length > 0
+        ? rawForecastDays
+        : forecastData?.forecast?.forecastday || [];
+
+    const sunData: Astro | null = forecastDays[0]?.astro || null;
+    const location = currentData?.location || forecastData?.location;
+
     return (
-      <WeatherCard title="Weather Forecast">
-        <div className="text-center py-8">
-          <div className="text-primary mb-3">
-            <div className="w-12 h-12 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-              <span className="text-xl">🌤️</span>
+      <div className="space-y-6">
+        {/* Location, Sun Times, and Date Header - Slim 1-row layout */}
+        {showLocationHeader && location && (
+          <div className="flex flex-wrap gap-3">
+            {/* Location Card */}
+            <div className="flex items-center gap-3 bg-card text-card-foreground p-3 rounded-lg border border-border shadow-sm flex-1 min-w-[200px]">
+              <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                <MapPin className="w-4 h-4 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base font-bold text-card-foreground truncate">
+                  {location.name}
+                </h2>
+                <p className="text-muted-foreground text-xs truncate">
+                  {location.region && `${location.region}, `}
+                  {location.country}
+                </p>
+              </div>
             </div>
-          </div>
-          <p className="text-muted-foreground">Search for a location to see weather information</p>
-        </div>
-      </WeatherCard>
-    );
-  }
 
-  // Use raw forecast periods if available, otherwise fall back to transformed data
-  const rawForecastDays = convertRawPeriodsToForecastDays(rawForecastPeriods);
-  const forecastDays = rawForecastDays.length > 0 ? rawForecastDays : (forecastData?.forecast?.forecastday || []);
-
-  const sunData: Astro | null = forecastDays[0]?.astro || null;
-  const location = currentData?.location || forecastData?.location;
-
-  return (
-    <div className="space-y-6">
-      {/* Location, Sun Times, and Date Header - Slim 1-row layout */}
-      {showLocationHeader && location && (
-        <div className="flex flex-wrap gap-3">
-          {/* Location Card */}
-          <div className="flex items-center gap-3 bg-card text-card-foreground p-3 rounded-lg border border-border shadow-sm flex-1 min-w-[200px]">
-            <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-              <MapPin className="w-4 h-4 text-primary" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h2 className="text-base font-bold text-card-foreground truncate">{location.name}</h2>
-              <p className="text-muted-foreground text-xs truncate">
-                {location.region && `${location.region}, `}
-                {location.country}
-              </p>
-            </div>
-          </div>
-
-          {/* Sun Times Card */}
-          {sunData && (
-            <div className="flex items-center gap-4 bg-card text-card-foreground p-3 rounded-lg border border-border shadow-sm flex-1 min-w-[200px]">
-              <div className="flex flex-col items-center gap-1 flex-1">
-                <span className="text-xs font-medium text-muted-foreground">Sunrise</span>
-                <div className="flex items-center gap-1">
-                  <FontAwesomeIcon icon={faSolidSun} className="w-4 h-4 text-amber-500" />
-                  <span className="text-sm font-semibold text-card-foreground">
-                    {formatTime(createTimeString(sunData.sunrise), timeFormat)}
+            {/* Sun Times Card */}
+            {sunData && (
+              <div className="flex items-center gap-4 bg-card text-card-foreground p-3 rounded-lg border border-border shadow-sm flex-1 min-w-[200px]">
+                <div className="flex flex-col items-center gap-1 flex-1">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Sunrise
                   </span>
+                  <div className="flex items-center gap-1">
+                    <FontAwesomeIcon
+                      icon={faSolidSun}
+                      className="w-4 h-4 text-amber-500"
+                    />
+                    <span className="text-sm font-semibold text-card-foreground">
+                      {formatTime(
+                        createTimeString(sunData.sunrise),
+                        timeFormat,
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="w-px h-6 bg-border/50"></div>
+
+                <div className="flex flex-col items-center gap-1 flex-1">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Sunset
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <FontAwesomeIcon
+                      icon={faSolidMoon}
+                      className="w-4 h-4 text-orange-400"
+                    />
+                    <span className="text-sm font-semibold text-card-foreground">
+                      {formatTime(createTimeString(sunData.sunset), timeFormat)}
+                    </span>
+                  </div>
                 </div>
               </div>
-              
-              <div className="w-px h-6 bg-border/50"></div>
-              
-              <div className="flex flex-col items-center gap-1 flex-1">
-                <span className="text-xs font-medium text-muted-foreground">Sunset</span>
-                <div className="flex items-center gap-1">
-                  <FontAwesomeIcon icon={faSolidMoon} className="w-4 h-4 text-orange-400" />
-                  <span className="text-sm font-semibold text-card-foreground">
-                    {formatTime(createTimeString(sunData.sunset), timeFormat)}
+            )}
+
+            {/* Date/Time Card */}
+            {location && (
+              <div className="flex flex-col items-center justify-center bg-card text-card-foreground p-3 rounded-lg border border-border shadow-sm flex-1 min-w-[120px]">
+                <div className="flex items-center gap-1 text-muted-foreground text-xs">
+                  <Clock className="w-3 h-3" />
+                  <span className="font-medium">
+                    {formatTime(location.localtime, timeFormat)}
                   </span>
                 </div>
+                <p className="text-muted-foreground/70 text-xs mt-1">
+                  {new Date(location.localtime).toLocaleDateString([], {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
-          {/* Date/Time Card */}
-          {location && (
-            <div className="flex flex-col items-center justify-center bg-card text-card-foreground p-3 rounded-lg border border-border shadow-sm flex-1 min-w-[120px]">
-              <div className="flex items-center gap-1 text-muted-foreground text-xs">
-                <Clock className="w-3 h-3" />
-                <span className="font-medium">{formatTime(location.localtime, timeFormat)}</span>
-              </div>
-              <p className="text-muted-foreground/70 text-xs mt-1">
-                {new Date(location.localtime).toLocaleDateString([], {
-                  month: 'short',
-                  day: 'numeric'
-                })}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+        <WeatherCard title="Weather Forecast">
+          {/* Forecast Section */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
+              5-Day Weather Overview
+            </h3>
 
-      <WeatherCard title="Weather Forecast">
-        {/* Forecast Section */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            5-Day Weather Overview
-          </h3>
-          
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
               {/* Show first 5 days from API */}
               {forecastDays.slice(0, 5).map((day, index) => {
-                const maxTemp = temperatureUnit === 'celsius' ? day.day.maxtemp_c : day.day.maxtemp_f;
-                const minTemp = temperatureUnit === 'celsius' ? day.day.mintemp_c : day.day.mintemp_f;
+                const maxTemp =
+                  temperatureUnit === "celsius"
+                    ? day.day.maxtemp_c
+                    : day.day.maxtemp_f;
+                const minTemp =
+                  temperatureUnit === "celsius"
+                    ? day.day.mintemp_c
+                    : day.day.mintemp_f;
                 const chanceOfRain = day.day.daily_chance_of_rain;
                 const chanceOfSnow = day.day.daily_chance_of_snow;
 
                 // Calculate label based on actual date
                 const today = new Date();
-                const [year, month, dayNum] = day.date.split('-').map(Number);
+                const [year, month, dayNum] = day.date.split("-").map(Number);
                 const dayDate = new Date(year, month - 1, dayNum);
-                const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                const diffDays = Math.round((dayDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
-                
+                const todayDate = new Date(
+                  today.getFullYear(),
+                  today.getMonth(),
+                  today.getDate(),
+                );
+                const diffDays = Math.round(
+                  (dayDate.getTime() - todayDate.getTime()) /
+                    (1000 * 60 * 60 * 24),
+                );
+
                 let label;
                 if (diffDays === 0) {
-                  label = 'Today';
+                  label = "Today";
                 } else if (diffDays === 1) {
-                  label = 'Tomorrow';
+                  label = "Tomorrow";
                 } else if (diffDays === 2) {
-                  label = 'In 2 days';
+                  label = "In 2 days";
                 } else if (diffDays === 3) {
-                  label = 'In 3 days';
+                  label = "In 3 days";
                 } else if (diffDays === 4) {
-                  label = 'In 4 days';
+                  label = "In 4 days";
                 } else {
                   label = day.date;
                 }
 
-              {/* Date alignment is now calculated correctly based on actual API response */}
+                {
+                  /* Date alignment is now calculated correctly based on actual API response */
+                }
 
-              return (
-                <div
-                key={day.date}
-                className={cn(
-                  'weather-card p-3 sm:p-4 text-center transition-all duration-300',
-                  'hover:scale-105 hover:shadow-md',
-                  index === 0 && 'ring-2 ring-primary/50 bg-primary/5'
-                )}
-                aria-label={`Forecast for ${formatDate(day.date)}`}
-              >
-                  {/* Date */}
-                  <div className="mb-3 min-h-[44px] flex flex-col items-center justify-center">
-                    <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs sm:text-sm mb-1">
-                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span>{formatDate(day.date, {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric'
-                      })}</span>
+                return (
+                  <div
+                    key={day.date}
+                    className={cn(
+                      "weather-card p-3 sm:p-4 text-center transition-all duration-300",
+                      "hover:scale-105 hover:shadow-md",
+                      index === 0 && "ring-2 ring-primary/50 bg-primary/5",
+                    )}
+                    aria-label={`Forecast for ${formatDate(day.date)}`}
+                  >
+                    {/* Date */}
+                    <div className="mb-3 min-h-[44px] flex flex-col items-center justify-center">
+                      <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs sm:text-sm mb-1">
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span>
+                          {formatDate(day.date, {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <span
+                        className={cn(
+                          "text-xs font-medium px-2 py-0.5 rounded-full",
+                          index === 0
+                            ? "text-primary bg-primary/10"
+                            : "text-green-600 bg-green-100 dark:bg-green-900/30",
+                        )}
+                      >
+                        {label}
+                      </span>
                     </div>
-                <span className={cn(
-                  'text-xs font-medium px-2 py-0.5 rounded-full',
-                  index === 0
-                    ? 'text-primary bg-primary/10'
-                    : 'text-green-600 bg-green-100 dark:bg-green-900/30'
-                )}>
-                  {label}
-                </span>
-                  </div>
 
-                  {/* Weather Icon */}
-                  <div className="mb-3">
-                    <FontAwesomeIcon
-                      icon={getWeatherIcon(
-                        extractConditionCode(day.day.condition.icon),
-                        isNightTime(day.day.condition.icon)
-                      )}
-                      className="w-8 h-8 sm:w-10 sm:h-10 text-blue-500 mx-auto drop-shadow-sm"
-                    />
-                    <p className="text-card-foreground/80 text-xs capitalize mt-1 line-clamp-1">
-                      {day.day.condition.text}
-                    </p>
-                  </div>
+                    {/* Weather Icon */}
+                    <div className="mb-3">
+                      <FontAwesomeIcon
+                        icon={getWeatherIcon(
+                          extractConditionCode(day.day.condition.icon),
+                          isNightTime(day.day.condition.icon),
+                        )}
+                        className="w-8 h-8 sm:w-10 sm:h-10 text-blue-500 mx-auto drop-shadow-sm"
+                      />
+                      <p className="text-card-foreground/80 text-xs capitalize mt-1 line-clamp-1">
+                        {day.day.condition.text}
+                      </p>
+                    </div>
 
-            {/* Temperatures */}
-            <div className="mb-3">
-              <div className="flex items-center justify-center gap-3">
-                {(() => {
-                  const isDayTime = checkIsDayTime(location?.localtime, sunData);
-                  return (
-                    <>
-                <div className="flex items-center gap-1">
-                  <TrendingUp className="w-4 h-4 text-red-500" />
-                  <span className={isDayTime && maxTemp !== 0
-                    ? "text-card-foreground font-bold text-sm sm:text-base" 
-                    : "text-muted-foreground text-sm sm:text-base"
-                  }>
-                    {maxTemp !== 0 ? formatTemperature(maxTemp, temperatureUnit) : "—"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <TrendingDown className="w-4 h-4 text-blue-500" />
-                  <span className={!isDayTime && minTemp !== 0
-                    ? "text-card-foreground font-bold text-xs sm:text-sm" 
-                    : "text-muted-foreground text-xs sm:text-sm"
-                  }>
-                    {minTemp !== 0 ? formatTemperature(minTemp, temperatureUnit) : "—"}
-                  </span>
-                </div>
-                    </>
-                  );
-                })()}
+                    {/* Temperatures */}
+                    <div className="mb-3">
+                      <div className="flex items-center justify-center gap-3">
+                        {(() => {
+                          const isDayTime = checkIsDayTime(
+                            location?.localtime,
+                            sunData,
+                          );
+                          return (
+                            <>
+                              <div className="flex items-center gap-1">
+                                <TrendingUp className="w-4 h-4 text-red-500" />
+                                <span
+                                  className={
+                                    isDayTime && maxTemp !== 0
+                                      ? "text-card-foreground font-bold text-sm sm:text-base"
+                                      : "text-muted-foreground text-sm sm:text-base"
+                                  }
+                                >
+                                  {maxTemp !== 0
+                                    ? formatTemperature(
+                                        maxTemp,
+                                        temperatureUnit,
+                                      )
+                                    : "—"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <TrendingDown className="w-4 h-4 text-blue-500" />
+                                <span
+                                  className={
+                                    !isDayTime && minTemp !== 0
+                                      ? "text-card-foreground font-bold text-xs sm:text-sm"
+                                      : "text-muted-foreground text-xs sm:text-sm"
+                                  }
+                                >
+                                  {minTemp !== 0
+                                    ? formatTemperature(
+                                        minTemp,
+                                        temperatureUnit,
+                                      )
+                                    : "—"}
+                                </span>
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Precipitation */}
+                    {(chanceOfRain > 0 || chanceOfSnow > 0) && (
+                      <div className="space-y-1 mb-3">
+                        {chanceOfRain > 0 && (
+                          <div className="flex items-center justify-center gap-1 text-blue-400 text-xs">
+                            <CloudRain className="w-3 h-3" />
+                            <span>{chanceOfRain}%</span>
+                          </div>
+                        )}
+                        {chanceOfSnow > 0 && (
+                          <div className="flex items-center justify-center gap-1 text-blue-300 text-xs">
+                            <Umbrella className="w-3 h-3" />
+                            <span>{chanceOfSnow}%</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Today Separator */}
+          <div
+            className="flex items-center my-6"
+            aria-label="Today's weather section"
+          >
+            <div className="flex-1 h-px bg-border/50"></div>
+            <span className="px-4 py-2 text-sm font-semibold text-primary bg-primary/10 rounded-full">
+              Today
+            </span>
+            <div className="flex-1 h-px bg-border/50"></div>
+          </div>
+
+          {/* Current Weather Section */}
+          {currentData && (
+            <div>
+              {/* Compact Weather Metrics Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <WeatherMetric
+                  icon={<Droplets className="w-4 h-4 text-blue-500" />}
+                  label="Humidity"
+                  value={`${currentData.current.humidity.toFixed(2)}%`}
+                />
+
+                <WeatherMetric
+                  icon={<Wind className="w-4 h-4 text-green-500" />}
+                  label="Wind"
+                  value={formatWindSpeed(
+                    windSpeedUnit === "metric"
+                      ? currentData.current.wind_kph
+                      : currentData.current.wind_mph,
+                    windSpeedUnit,
+                  )}
+                />
+
+                <WeatherMetric
+                  icon={<Gauge className="w-4 h-4 text-purple-500" />}
+                  label="Pressure"
+                  value={formatPressure(currentData.current, pressureUnit)}
+                />
+
+                <WeatherMetric
+                  icon={<Eye className="w-4 h-4 text-amber-500" />}
+                  label="Visibility"
+                  value={
+                    windSpeedUnit === "metric"
+                      ? `${currentData.current.vis_km} km`
+                      : `${currentData.current.vis_miles} mi`
+                  }
+                />
+
+                <WeatherMetric
+                  icon={<Thermometer className="w-4 h-4 text-red-500" />}
+                  label="UV Index"
+                  value={`${currentData.current.uv}`}
+                />
+
+                <WeatherMetric
+                  icon={<Clock className="w-4 h-4 text-muted-foreground" />}
+                  label="Updated"
+                  value={formatTime(
+                    currentData.current.last_updated,
+                    timeFormat,
+                  )}
+                />
               </div>
             </div>
-
-                  {/* Precipitation */}
-                  {(chanceOfRain > 0 || chanceOfSnow > 0) && (
-                    <div className="space-y-1 mb-3">
-                      {chanceOfRain > 0 && (
-                        <div className="flex items-center justify-center gap-1 text-blue-400 text-xs">
-                          <CloudRain className="w-3 h-3" />
-                          <span>{chanceOfRain}%</span>
-                        </div>
-                      )}
-                      {chanceOfSnow > 0 && (
-                        <div className="flex items-center justify-center gap-1 text-blue-300 text-xs">
-                          <Umbrella className="w-3 h-3" />
-                          <span>{chanceOfSnow}%</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Today Separator */}
-        <div className="flex items-center my-6" aria-label="Today's weather section">
-          <div className="flex-1 h-px bg-border/50"></div>
-          <span className="px-4 py-2 text-sm font-semibold text-primary bg-primary/10 rounded-full">
-            Today
-          </span>
-          <div className="flex-1 h-px bg-border/50"></div>
-        </div>
-
-        {/* Current Weather Section */}
-        {currentData && (
-          <div>
-            {/* Compact Weather Metrics Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <WeatherMetric
-              icon={<Droplets className="w-4 h-4 text-blue-500" />}
-              label="Humidity"
-              value={`${currentData.current.humidity.toFixed(2)}%`}
-              />
-
-              <WeatherMetric
-                icon={<Wind className="w-4 h-4 text-green-500" />}
-                label="Wind"
-                value={formatWindSpeed(
-                  windSpeedUnit === 'metric'
-                    ? currentData.current.wind_kph
-                    : currentData.current.wind_mph,
-                  windSpeedUnit
-                )}
-              />
-
-              <WeatherMetric
-                icon={<Gauge className="w-4 h-4 text-purple-500" />}
-                label="Pressure"
-                value={formatPressure(currentData.current, pressureUnit)}
-              />
-
-              <WeatherMetric
-                icon={<Eye className="w-4 h-4 text-amber-500" />}
-                label="Visibility"
-                value={
-                  windSpeedUnit === 'metric'
-                    ? `${currentData.current.vis_km} km`
-                    : `${currentData.current.vis_miles} mi`
-                }
-              />
-
-              <WeatherMetric
-                icon={<Thermometer className="w-4 h-4 text-red-500" />}
-                label="UV Index"
-                value={`${currentData.current.uv}`}
-              />
-
-              <WeatherMetric
-                icon={<Clock className="w-4 h-4 text-muted-foreground" />}
-                label="Updated"
-                value={formatTime(currentData.current.last_updated, timeFormat)}
-              />
-            </div>
-          </div>
-        )}
-      </WeatherCard>
-    </div>
-  );
-});
+          )}
+        </WeatherCard>
+      </div>
+    );
+  },
+);
 
 // Add display name for better debugging
-UnifiedWeather.displayName = 'UnifiedWeather';
+UnifiedWeather.displayName = "UnifiedWeather";
 
 // Weather Metric Component
 const WeatherMetric: React.FC<{
@@ -404,18 +491,23 @@ const WeatherMetric: React.FC<{
     {icon}
     <div className="min-w-0">
       <span className="text-xs text-muted-foreground block">{label}</span>
-      <span className="text-sm font-semibold text-card-foreground">{value}</span>
+      <span className="text-sm font-semibold text-card-foreground">
+        {value}
+      </span>
     </div>
   </div>
 );
 
 // Utility function to format time based on 12hr/24hr preference - moved outside component
-const formatTime = (dateString: string, format: '12hr' | '24hr' = '12hr'): string => {
+const formatTime = (
+  dateString: string,
+  format: "12hr" | "24hr" = "12hr",
+): string => {
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: format === '12hr'
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: format === "12hr",
   };
   return date.toLocaleTimeString([], options);
 };
@@ -424,56 +516,71 @@ const formatTime = (dateString: string, format: '12hr' | '24hr' = '12hr'): strin
 const createTimeString = (timeStr: string): string => {
   // Create a date object with today's date and the given time
   const today = new Date();
-  const [time, period] = timeStr.split(' ');
-  const [hours, minutes] = time.split(':').map(Number);
-  
+  const [time, period] = timeStr.split(" ");
+  const [hours, minutes] = time.split(":").map(Number);
+
   // Convert to 24-hour format if needed
   let hours24 = hours;
-  if (period === 'PM' && hours !== 12) {
+  if (period === "PM" && hours !== 12) {
     hours24 = hours + 12;
-  } else if (period === 'AM' && hours === 12) {
+  } else if (period === "AM" && hours === 12) {
     hours24 = 0;
   }
-  
+
   today.setHours(hours24, minutes, 0, 0);
   return today.toISOString();
 };
 
 // Utility function to format pressure based on unit preference - moved outside component
-const formatPressure = (current: CurrentWeatherType, unit: 'mb' | 'inHg' = 'mb'): string => {
-  return unit === 'mb' ? `${current.pressure_mb} mb` : `${current.pressure_in} inHg`;
+const formatPressure = (
+  current: CurrentWeatherType,
+  unit: "mb" | "inHg" = "mb",
+): string => {
+  return unit === "mb"
+    ? `${current.pressure_mb} mb`
+    : `${current.pressure_in} inHg`;
 };
 
 // Check if it's currently day time based on location's local time and sun data
-const checkIsDayTime = (localTime?: string, sunData?: Astro | null): boolean => {
+const checkIsDayTime = (
+  localTime?: string,
+  sunData?: Astro | null,
+): boolean => {
   if (!localTime) return true; // Default to day if no time available
-  
+
   const now = new Date(localTime);
   const currentHour = now.getHours();
-  
+
   // If we have sun data, use sunrise/sunset for more accuracy
   if (sunData?.sunrise && sunData?.sunset) {
     const sunrise = createTimeString(sunData.sunrise);
     const sunset = createTimeString(sunData.sunset);
     const sunriseHour = new Date(sunrise).getHours();
     const sunsetHour = new Date(sunset).getHours();
-    
+
     return currentHour >= sunriseHour && currentHour < sunsetHour;
   }
-  
+
   // Fallback: day is roughly 6 AM to 6 PM
   return currentHour >= 6 && currentHour < 18;
 };
 
 // Convert raw API periods to forecast day format
-const convertRawPeriodsToForecastDays = (periods: RawForecastPeriod[] | undefined) => {
+const convertRawPeriodsToForecastDays = (
+  periods: RawForecastPeriod[] | undefined,
+) => {
   if (!periods || periods.length === 0) return [];
-  
+
   // Group periods by date
-  const days: { [date: string]: { daytime?: RawForecastPeriod; nighttime?: RawForecastPeriod } } = {};
-  
+  const days: {
+    [date: string]: {
+      daytime?: RawForecastPeriod;
+      nighttime?: RawForecastPeriod;
+    };
+  } = {};
+
   periods.forEach((period) => {
-    const date = period.startTime.split('T')[0];
+    const date = period.startTime.split("T")[0];
     if (!days[date]) {
       days[date] = {};
     }
@@ -483,56 +590,58 @@ const convertRawPeriodsToForecastDays = (periods: RawForecastPeriod[] | undefine
       days[date].nighttime = period;
     }
   });
-  
+
   // Convert to forecast day format
-  return Object.entries(days).slice(0, 5).map(([date, periods]) => {
-    const dayPeriod = periods.daytime || periods.nighttime;
-    const maxTempF = periods.daytime?.temperature ?? 0;
-    const minTempF = periods.nighttime?.temperature ?? 0;
-    const maxTempC = Math.round((maxTempF - 32) * 5 / 9);
-    const minTempC = Math.round((minTempF - 32) * 5 / 9);
-    const pop = dayPeriod?.probabilityOfPrecipitation?.value ?? 0;
-    
-    return {
-      date,
-      date_epoch: Math.floor(new Date(date).getTime() / 1000),
-      day: {
-        maxtemp_c: maxTempC,
-        maxtemp_f: maxTempF,
-        mintemp_c: minTempC,
-        mintemp_f: minTempF,
-        avgtemp_c: Math.round((maxTempC + minTempC) / 2),
-        avgtemp_f: Math.round((maxTempF + minTempF) / 2),
-        maxwind_mph: 10,
-        maxwind_kph: 16,
-        totalprecip_mm: 0,
-        totalprecip_in: 0,
-        totalsnow_cm: 0,
-        avgvis_km: 10,
-        avgvis_miles: 6,
-        avghumidity: 65,
-        daily_will_it_rain: pop > 30 ? 1 : 0,
-        daily_chance_of_rain: pop,
-        daily_will_it_snow: 0,
-        daily_chance_of_snow: 0,
-        condition: {
-          text: dayPeriod?.shortForecast || 'Clear',
-          icon: dayPeriod?.icon || '',
-          code: 1000,
+  return Object.entries(days)
+    .slice(0, 5)
+    .map(([date, periods]) => {
+      const dayPeriod = periods.daytime || periods.nighttime;
+      const maxTempF = periods.daytime?.temperature ?? 0;
+      const minTempF = periods.nighttime?.temperature ?? 0;
+      const maxTempC = Math.round(((maxTempF - 32) * 5) / 9);
+      const minTempC = Math.round(((minTempF - 32) * 5) / 9);
+      const pop = dayPeriod?.probabilityOfPrecipitation?.value ?? 0;
+
+      return {
+        date,
+        date_epoch: Math.floor(new Date(date).getTime() / 1000),
+        day: {
+          maxtemp_c: maxTempC,
+          maxtemp_f: maxTempF,
+          mintemp_c: minTempC,
+          mintemp_f: minTempF,
+          avgtemp_c: Math.round((maxTempC + minTempC) / 2),
+          avgtemp_f: Math.round((maxTempF + minTempF) / 2),
+          maxwind_mph: 10,
+          maxwind_kph: 16,
+          totalprecip_mm: 0,
+          totalprecip_in: 0,
+          totalsnow_cm: 0,
+          avgvis_km: 10,
+          avgvis_miles: 6,
+          avghumidity: 65,
+          daily_will_it_rain: pop > 30 ? 1 : 0,
+          daily_chance_of_rain: pop,
+          daily_will_it_snow: 0,
+          daily_chance_of_snow: 0,
+          condition: {
+            text: dayPeriod?.shortForecast || "Clear",
+            icon: dayPeriod?.icon || "",
+            code: 1000,
+          },
+          uv: 5,
         },
-        uv: 5,
-      },
-      astro: {
-        sunrise: '06:00 AM',
-        sunset: '06:00 PM',
-        moonrise: '12:00 AM',
-        moonset: '12:00 PM',
-        moon_phase: 'Full Moon',
-        moon_illumination: 100,
-        is_moon_up: 1,
-        is_sun_up: 1,
-      },
-      hour: [],
-    };
-  });
+        astro: {
+          sunrise: "06:00 AM",
+          sunset: "06:00 PM",
+          moonrise: "12:00 AM",
+          moonset: "12:00 PM",
+          moon_phase: "Full Moon",
+          moon_illumination: 100,
+          is_moon_up: 1,
+          is_sun_up: 1,
+        },
+        hour: [],
+      };
+    });
 };

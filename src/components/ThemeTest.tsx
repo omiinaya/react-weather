@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useTheme } from '@/contexts/ThemeContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export function ThemeTest() {
   const { theme, setTheme, toggleTheme } = useTheme();
@@ -20,27 +20,23 @@ export function ThemeTest() {
             {theme}
           </span>
         </div>
-        
+
         <div className="flex gap-2">
-          <Button 
-            variant={theme === 'light' ? 'default' : 'outline'}
-            onClick={() => setTheme('light')}
+          <Button
+            variant={theme === "light" ? "default" : "outline"}
+            onClick={() => setTheme("light")}
             size="sm"
           >
             Light Mode
           </Button>
-          <Button 
-            variant={theme === 'dark' ? 'default' : 'outline'}
-            onClick={() => setTheme('dark')}
+          <Button
+            variant={theme === "dark" ? "default" : "outline"}
+            onClick={() => setTheme("dark")}
             size="sm"
           >
             Dark Mode
           </Button>
-          <Button 
-            variant="outline"
-            onClick={toggleTheme}
-            size="sm"
-          >
+          <Button variant="outline" onClick={toggleTheme} size="sm">
             Toggle Theme
           </Button>
         </div>
@@ -52,7 +48,7 @@ export function ThemeTest() {
             <div className="h-4 bg-secondary rounded mb-1"></div>
             <div className="h-4 bg-muted rounded"></div>
           </div>
-          
+
           <div className="p-3 bg-card border rounded-lg">
             <div className="font-medium mb-2">Text Colors</div>
             <div className="text-foreground">Foreground Text</div>
