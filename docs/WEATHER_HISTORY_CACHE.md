@@ -29,6 +29,7 @@ The weather history cache system provides a comprehensive solution for storing a
 ## Data Structure
 
 ### 5-Day Historical Window
+
 ```
 [Day-2, Day-1, Today, Day+1, Day+2]
 ```
@@ -38,6 +39,7 @@ The weather history cache system provides a comprehensive solution for storing a
 - **Days +1 and +2**: Forecast data from API
 
 ### Cache Storage Format
+
 ```typescript
 interface WeatherHistoryCache {
   [location: string]: {
@@ -51,15 +53,12 @@ interface WeatherHistoryCache {
 ### Basic Implementation
 
 ```typescript
-import { useWeatherHistoryCache } from '@/hooks/useWeatherHistoryCache';
-import { WeatherContainer } from '@/components/WeatherContainer';
+import { useWeatherHistoryCache } from "@/hooks/useWeatherHistoryCache";
+import { WeatherContainer } from "@/components/WeatherContainer";
 
 // In your component:
-const { 
-  historicalData, 
-  storeHistoricalData, 
-  getFiveDayForecast 
-} = useWeatherHistoryCache();
+const { historicalData, storeHistoricalData, getFiveDayForecast } =
+  useWeatherHistoryCache();
 
 // Store new weather data
 storeHistoricalData(location, forecastData, currentData);
@@ -68,29 +67,32 @@ storeHistoricalData(location, forecastData, currentData);
 ### Enhanced Forecast Generation
 
 ```typescript
-import { createFiveDayHistoricalForecast } from '@/lib/utils/weather-history-utils';
+import { createFiveDayHistoricalForecast } from "@/lib/utils/weather-history-utils";
 
 const fiveDayForecast = createFiveDayHistoricalForecast(
   location,
   forecastData,
   historicalData[location] || {},
-  currentData
+  currentData,
 );
 ```
 
 ## Features
 
 ### 1. Persistent Storage
+
 - Uses browser localStorage for data persistence
 - Automatically loads cached data on app startup
 - Stores up to 2 days of historical data per location
 
 ### 2. Smart Data Combination
+
 - Automatically combines cached historical data with API responses
 - Falls back to generated data when historical data is unavailable
 - Maintains data consistency across sessions
 
 ### 3. Date Labeling
+
 - Provides contextual labels for historical dates:
   - "2 days ago"
   - "Yesterday"
@@ -99,6 +101,7 @@ const fiveDayForecast = createFiveDayHistoricalForecast(
   - "In 2 days"
 
 ### 4. Visual Indicators
+
 - Historical days: Amber color scheme
 - Today: Primary color scheme
 - Future days: Green color scheme
@@ -106,11 +109,13 @@ const fiveDayForecast = createFiveDayHistoricalForecast(
 ## API Integration
 
 ### WeatherAPI Compatibility
+
 - Designed to work with WeatherAPI.com responses
 - Transforms current weather into forecast day format
 - Handles missing historical data gracefully
 
 ### Error Handling
+
 - Graceful degradation when historical data is unavailable
 - Fallback to generated data patterns
 - Clear error messaging for debugging
@@ -118,6 +123,7 @@ const fiveDayForecast = createFiveDayHistoricalForecast(
 ## Testing
 
 ### Manual Testing Steps
+
 1. Load the application and search for a location
 2. Observe the 5-day forecast window
 3. Check browser DevTools → Application → Local Storage
@@ -125,6 +131,7 @@ const fiveDayForecast = createFiveDayHistoricalForecast(
 5. Reload the page to confirm persistence
 
 ### Expected Behavior
+
 - First visit: Shows 3 days from API + 2 fallback days
 - Subsequent visits: Shows actual historical data for past days
 - Data accumulates over time for better accuracy
@@ -132,11 +139,13 @@ const fiveDayForecast = createFiveDayHistoricalForecast(
 ## Performance Considerations
 
 ### Storage Optimization
+
 - LocalStorage size: ~2-5KB per location for 2 days of data
 - Automatic cleanup for old locations
 - Minimal memory footprint
 
 ### Load Times
+
 - Instant retrieval from cache vs API calls
 - Background caching doesn't block UI
 - Efficient data merging algorithms
@@ -144,6 +153,7 @@ const fiveDayForecast = createFiveDayHistoricalForecast(
 ## Future Enhancements
 
 ### Potential Improvements
+
 1. **Historical API Integration**: Connect to WeatherAPI history endpoint for actual historical data
 2. **Data Sync**: Cross-device synchronization of cached data
 3. **Advanced Analytics**: Weather trend analysis over time
@@ -153,29 +163,33 @@ const fiveDayForecast = createFiveDayHistoricalForecast(
 ## Configuration
 
 ### Environment Variables
+
 ```bash
 # Weather API key (required for current/future data)
 NEXT_PUBLIC_WEATHER_API_KEY=your_api_key_here
 ```
 
 ### Browser Requirements
+
 - localStorage support (all modern browsers)
 - No additional dependencies required
 
 ## Troubleshooting
 
 ### Common Issues
+
 1. **No historical data showing**: Check browser localStorage permissions
 2. **Incorrect date labels**: Verify system timezone settings
 3. **Cache corruption**: Use clearCache() method to reset
 
 ### Debug Commands
+
 ```javascript
 // Check cache contents
-console.log(JSON.parse(localStorage.getItem('weather-history-cache')));
+console.log(JSON.parse(localStorage.getItem("weather-history-cache")));
 
 // Clear specific location cache
-clearCache('New York');
+clearCache("New York");
 
 // Clear all cache
 clearCache();
@@ -184,11 +198,13 @@ clearCache();
 ## Dependencies
 
 ### Core Dependencies
+
 - React Query (for API caching)
 - localStorage API
 - TypeScript for type safety
 
 ### Browser APIs
+
 - localStorage
 - Date/Time APIs
 - JSON serialization

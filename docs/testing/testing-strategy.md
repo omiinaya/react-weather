@@ -7,14 +7,17 @@ This document outlines the comprehensive testing strategy and performance optimi
 ## Testing Pyramid Strategy
 
 ### Unit Testing (70% of tests)
+
 **Tools**: Jest, React Testing Library
 **Coverage**: Components, utilities, hooks, pure functions
 
 ### Integration Testing (20% of tests)
+
 **Tools**: React Testing Library, Jest
 **Coverage**: Component interactions, API integrations
 
 ### End-to-End Testing (10% of tests)
+
 **Tools**: Cypress
 **Coverage**: Critical user flows, cross-browser testing
 
@@ -44,7 +47,7 @@ describe('WeatherCard', () => {
         unit="celsius"
       />
     );
-    
+
     expect(screen.getByText('25°C')).toBeInTheDocument();
     expect(screen.getByText('Sunny')).toBeInTheDocument();
     expect(screen.getByText('New York')).toBeInTheDocument();
@@ -52,7 +55,7 @@ describe('WeatherCard', () => {
 
   it('handles unit conversion', () => {
     const mockOnUnitChange = jest.fn();
-    
+
     render(
       <WeatherCard
         temperature={25}
@@ -62,10 +65,10 @@ describe('WeatherCard', () => {
         onUnitChange={mockOnUnitChange}
       />
     );
-    
+
     const fahrenheitButton = screen.getByText('°F');
     fireEvent.click(fahrenheitButton);
-    
+
     expect(mockOnUnitChange).toHaveBeenCalledWith('fahrenheit');
   });
 
@@ -78,7 +81,7 @@ describe('WeatherCard', () => {
         isLoading={true}
       />
     );
-    
+
     expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
   });
 });
@@ -88,27 +91,32 @@ describe('WeatherCard', () => {
 
 ```typescript
 // __tests__/hooks/useWeather.test.ts
-import { renderHook, act } from '@testing-library/react';
-import { useWeather } from '@/hooks/useWeather';
-import { weatherApi } from '@/lib/api';
+import { renderHook, act } from "@testing-library/react";
+import { useWeather } from "@/hooks/useWeather";
+import { weatherApi } from "@/lib/api";
 
-jest.mock('@/lib/api');
+jest.mock("@/lib/api");
 
-describe('useWeather', () => {
+describe("useWeather", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('fetches weather data successfully', async () => {
-    const mockWeatherData = { location: { name: 'New York' }, current: { temp_c: 25 } };
-    (weatherApi.getCurrentWeather as jest.Mock).mockResolvedValue(mockWeatherData);
+  it("fetches weather data successfully", async () => {
+    const mockWeatherData = {
+      location: { name: "New York" },
+      current: { temp_c: 25 },
+    };
+    (weatherApi.getCurrentWeather as jest.Mock).mockResolvedValue(
+      mockWeatherData,
+    );
 
-    const { result } = renderHook(() => useWeather('New York'));
+    const { result } = renderHook(() => useWeather("New York"));
 
     expect(result.current.isLoading).toBe(true);
 
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.isLoading).toBe(false);
@@ -116,14 +124,16 @@ describe('useWeather', () => {
     expect(result.current.error).toBeNull();
   });
 
-  it('handles API errors', async () => {
-    const errorMessage = 'API Error';
-    (weatherApi.getCurrentWeather as jest.Mock).mockRejectedValue(new Error(errorMessage));
+  it("handles API errors", async () => {
+    const errorMessage = "API Error";
+    (weatherApi.getCurrentWeather as jest.Mock).mockRejectedValue(
+      new Error(errorMessage),
+    );
 
-    const { result } = renderHook(() => useWeather('Invalid Location'));
+    const { result } = renderHook(() => useWeather("Invalid Location"));
 
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.isLoading).toBe(false);
@@ -137,30 +147,30 @@ describe('useWeather', () => {
 
 ```typescript
 // __tests__/utils/weatherUtils.test.ts
-import { formatTemperature, getWeatherIcon } from '@/utils/weatherUtils';
+import { formatTemperature, getWeatherIcon } from "@/utils/weatherUtils";
 
-describe('weatherUtils', () => {
-  describe('formatTemperature', () => {
-    it('formats celsius temperature', () => {
-      expect(formatTemperature(25, 'celsius')).toBe('25°C');
+describe("weatherUtils", () => {
+  describe("formatTemperature", () => {
+    it("formats celsius temperature", () => {
+      expect(formatTemperature(25, "celsius")).toBe("25°C");
     });
 
-    it('formats fahrenheit temperature', () => {
-      expect(formatTemperature(77, 'fahrenheit')).toBe('77°F');
+    it("formats fahrenheit temperature", () => {
+      expect(formatTemperature(77, "fahrenheit")).toBe("77°F");
     });
 
-    it('rounds temperature to nearest integer', () => {
-      expect(formatTemperature(25.6, 'celsius')).toBe('26°C');
+    it("rounds temperature to nearest integer", () => {
+      expect(formatTemperature(25.6, "celsius")).toBe("26°C");
     });
   });
 
-  describe('getWeatherIcon', () => {
-    it('returns correct icon for sunny weather', () => {
-      expect(getWeatherIcon(1000)).toBe('/icons/sunny.png');
+  describe("getWeatherIcon", () => {
+    it("returns correct icon for sunny weather", () => {
+      expect(getWeatherIcon(1000)).toBe("/icons/sunny.png");
     });
 
-    it('returns default icon for unknown code', () => {
-      expect(getWeatherIcon(9999)).toBe('/icons/default.png');
+    it("returns default icon for unknown code", () => {
+      expect(getWeatherIcon(9999)).toBe("/icons/default.png");
     });
   });
 });
@@ -231,11 +241,11 @@ describe('WeatherApp Integration', () => {
 
 ```javascript
 // cypress.config.js
-const { defineConfig } = require('cypress');
+const { defineConfig } = require("cypress");
 
 module.exports = defineConfig({
   e2e: {
-    baseUrl: 'http://localhost:3000',
+    baseUrl: "http://localhost:3000",
     setupNodeEvents(on, config) {
       // implement node event listeners here
     },
@@ -249,47 +259,47 @@ module.exports = defineConfig({
 
 ```typescript
 // cypress/e2e/weather.cy.ts
-describe('Weather App E2E Tests', () => {
+describe("Weather App E2E Tests", () => {
   beforeEach(() => {
-    cy.intercept('GET', '**/current.json*', {
-      fixture: 'weather.json'
-    }).as('getWeather');
+    cy.intercept("GET", "**/current.json*", {
+      fixture: "weather.json",
+    }).as("getWeather");
 
-    cy.visit('/');
+    cy.visit("/");
   });
 
-  it('loads and displays weather data', () => {
-    cy.get('[data-testid="search-input"]').type('New York');
+  it("loads and displays weather data", () => {
+    cy.get('[data-testid="search-input"]').type("New York");
     cy.get('[data-testid="search-button"]').click();
 
-    cy.wait('@getWeather');
+    cy.wait("@getWeather");
 
-    cy.contains('25°C').should('be.visible');
-    cy.contains('Sunny').should('be.visible');
-    cy.contains('New York').should('be.visible');
+    cy.contains("25°C").should("be.visible");
+    cy.contains("Sunny").should("be.visible");
+    cy.contains("New York").should("be.visible");
   });
 
-  it('handles invalid location searches', () => {
-    cy.intercept('GET', '**/current.json*', {
+  it("handles invalid location searches", () => {
+    cy.intercept("GET", "**/current.json*", {
       statusCode: 400,
-      body: { error: { message: 'No matching location found.' } }
-    }).as('getWeatherError');
+      body: { error: { message: "No matching location found." } },
+    }).as("getWeatherError");
 
-    cy.get('[data-testid="search-input"]').type('Invalid City');
+    cy.get('[data-testid="search-input"]').type("Invalid City");
     cy.get('[data-testid="search-button"]').click();
 
-    cy.wait('@getWeatherError');
+    cy.wait("@getWeatherError");
 
-    cy.contains('No matching location found').should('be.visible');
+    cy.contains("No matching location found").should("be.visible");
   });
 
-  it('maintains search history', () => {
-    cy.get('[data-testid="search-input"]').type('London');
+  it("maintains search history", () => {
+    cy.get('[data-testid="search-input"]').type("London");
     cy.get('[data-testid="search-button"]').click();
 
-    cy.wait('@getWeather');
+    cy.wait("@getWeather");
 
-    cy.get('[data-testid="search-history"]').should('contain', 'London');
+    cy.get('[data-testid="search-history"]').should("contain", "London");
   });
 });
 ```
@@ -328,25 +338,25 @@ jobs:
 module.exports = {
   ci: {
     collect: {
-      startServerCommand: 'npm start',
-      startServerReadyPattern: 'ready on',
-      url: ['http://localhost:3000'],
+      startServerCommand: "npm start",
+      startServerReadyPattern: "ready on",
+      url: ["http://localhost:3000"],
       numberOfRuns: 3,
     },
     assert: {
       assertions: {
-        'categories:performance': ['error', { minScore: 0.9 }],
-        'categories:accessibility': ['error', { minScore: 0.9 }],
-        'categories:best-practices': ['error', { minScore: 0.9 }],
-        'categories:seo': ['error', { minScore: 0.9 }],
-        'first-contentful-paint': ['error', { maxNumericValue: 2000 }],
-        'largest-contentful-paint': ['error', { maxNumericValue: 2500 }],
-        'cumulative-layout-shift': ['error', { maxNumericValue: 0.1 }],
-        'interactive': ['error', { maxNumericValue: 3500 }],
+        "categories:performance": ["error", { minScore: 0.9 }],
+        "categories:accessibility": ["error", { minScore: 0.9 }],
+        "categories:best-practices": ["error", { minScore: 0.9 }],
+        "categories:seo": ["error", { minScore: 0.9 }],
+        "first-contentful-paint": ["error", { maxNumericValue: 2000 }],
+        "largest-contentful-paint": ["error", { maxNumericValue: 2500 }],
+        "cumulative-layout-shift": ["error", { maxNumericValue: 0.1 }],
+        interactive: ["error", { maxNumericValue: 3500 }],
       },
     },
     upload: {
-      target: 'temporary-public-storage',
+      target: "temporary-public-storage",
     },
   },
 };
@@ -358,8 +368,8 @@ module.exports = {
 
 ```javascript
 // next.config.js
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
 });
 
 module.exports = withBundleAnalyzer({
@@ -367,14 +377,14 @@ module.exports = withBundleAnalyzer({
   swcMinify: true,
   poweredByHeader: false,
   images: {
-    formats: ['image/avif', 'image/webp'],
-    domains: ['cdn.weatherapi.com'],
+    formats: ["image/avif", "image/webp"],
+    domains: ["cdn.weatherapi.com"],
   },
   experimental: {
     optimizeCss: true,
   },
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole: process.env.NODE_ENV === "production",
   },
 });
 ```
@@ -425,7 +435,7 @@ const ForecastList = ({ forecastDays }) => {
 ```typescript
 // Implement caching with React Query
 const { data, isLoading, error } = useQuery({
-  queryKey: ['weather', location],
+  queryKey: ["weather", location],
   queryFn: () => weatherApi.getCurrentWeather(location),
   staleTime: 10 * 60 * 1000, // 10 minutes
   cacheTime: 30 * 60 * 1000, // 30 minutes
@@ -474,7 +484,7 @@ export const trackUserInteraction = (action: string, data?: any) => {
 ```typescript
 // src/utils/errorHandler.ts
 export const logError = (error: Error, context?: any) => {
-  console.error('Application Error:', error, context);
+  console.error("Application Error:", error, context);
   // Send to error tracking service (Sentry, etc.)
 };
 
@@ -483,7 +493,7 @@ class ErrorBoundary extends React.Component {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     logError(error, { componentStack: errorInfo.componentStack });
   }
-  
+
   render() {
     return this.props.children;
   }
@@ -493,6 +503,7 @@ class ErrorBoundary extends React.Component {
 ## Test Coverage Requirements
 
 ### Minimum Coverage Targets
+
 - **Overall**: 80%+
 - **Components**: 75%+
 - **Hooks**: 85%+

@@ -3,9 +3,11 @@
 This directory contains documentation for React components used in the Weather App.
 
 ## Purpose
+
 Document component architecture, props, usage examples, and implementation details.
 
 ## Planned Content
+
 - Component hierarchy and relationships
 - Props documentation for each component
 - Usage examples and code snippets
@@ -15,6 +17,7 @@ Document component architecture, props, usage examples, and implementation detai
 - Migration guides for deprecated components
 
 ## Files to Add
+
 - component-hierarchy.md
 - unified-weather-component.md (NEW)
 - weather-display-component.md

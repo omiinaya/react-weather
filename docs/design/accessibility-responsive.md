@@ -7,6 +7,7 @@ This document outlines the comprehensive accessibility (A11y) and responsive des
 ## Accessibility Standards Compliance
 
 ### WCAG 2.1 Level AA Compliance
+
 The application adheres to Web Content Accessibility Guidelines (WCAG) 2.1 Level AA standards:
 
 - **Perceivable**: Information and UI components must be presentable to users in ways they can perceive
@@ -73,12 +74,12 @@ const WeatherApp = () => {
         <h1>Weather App</h1>
         <nav>{/* Navigation */}</nav>
       </header>
-      
+
       <section aria-labelledby="weather-heading">
         <h2 id="weather-heading">Current Weather</h2>
         {/* Weather content */}
       </section>
-      
+
       <footer>{/* Footer content */}</footer>
     </main>
   );
@@ -174,6 +175,7 @@ const InteractiveComponent = () => {
 ### Contrast Validation
 
 All color combinations meet WCAG 2.1 AA requirements:
+
 - Normal text: ≥ 4.5:1 contrast ratio
 - Large text: ≥ 3:1 contrast ratio
 - UI components: ≥ 3:1 contrast ratio
@@ -244,16 +246,16 @@ button:focus-visible {
 // Manage focus for modal dialogs
 const useFocusManagement = () => {
   const focusTrapRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         // Close modal and return focus
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   return focusTrapRef;
@@ -316,7 +318,7 @@ const SearchForm = () => {
           </div>
         )}
       </div>
-      
+
       <button type="submit" aria-label="Search for weather">
         Search
       </button>
@@ -342,18 +344,21 @@ const SearchForm = () => {
 ### Manual Testing Checklist
 
 **Keyboard Navigation**
+
 - [ ] Tab through all interactive elements
 - [ ] Enter/space to activate buttons and controls
 - [ ] Escape to close modals and dialogs
 - [ ] Arrow keys for custom components
 
 **Screen Reader Testing**
+
 - [ ] Announcements for dynamic content
 - [ ] Proper reading order
 - [ ] Meaningful alt text for images
 - [ ] Form field labels and instructions
 
 **Visual Testing**
+
 - [ ] High contrast mode compatibility
 - [ ] Zoom to 200% without loss of functionality
 - [ ] Color blindness simulation

@@ -19,6 +19,7 @@ Welcome to the comprehensive documentation for the React Weather App. This docum
 ## Quick Start
 
 ### Technology Stack
+
 - **Framework**: Next.js 14+ with App Router
 - **Language**: TypeScript 5+
 - **Styling**: Tailwind CSS 3+
@@ -27,6 +28,7 @@ Welcome to the comprehensive documentation for the React Weather App. This docum
 - **Testing**: Jest, React Testing Library, Cypress
 
 ### Key Features
+
 - Current weather display with real-time data
 - 5-day weather forecast
 - Location search with autocomplete
@@ -44,12 +46,14 @@ Welcome to the comprehensive documentation for the React Weather App. This docum
 ## Development Guidelines
 
 ### Code Quality
+
 - TypeScript strict mode enabled
 - ESLint and Prettier for code formatting
 - Comprehensive test coverage requirements
 - Accessibility compliance enforced
 
 ### Performance Targets
+
 - Lighthouse score ≥ 90
 - Core Web Vitals compliance
 - Bundle size optimization

@@ -3,9 +3,11 @@
 This directory contains deployment guides and setup instructions for the React Weather App.
 
 ## Purpose
+
 Document deployment processes, environment setup, and production configuration.
 
 ## Planned Content
+
 - Local development setup
 - Production deployment guides
 - Environment configuration
@@ -14,6 +16,7 @@ Document deployment processes, environment setup, and production configuration.
 - Monitoring and logging setup
 
 ## Files to Add
+
 - local-development.md
 - production-deployment.md
 - environment-configuration.md

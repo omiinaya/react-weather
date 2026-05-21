@@ -1,6 +1,7 @@
 # UnifiedWeather Component
 
 ## Overview
+
 The `UnifiedWeather` component combines the functionality of both `CurrentWeather` and `WeatherForecast` components into a single, cohesive weather display. It presents the 5-day forecast at the top, followed by a "Today" separator, and then displays current weather metrics in a compact grid layout.
 
 ## Props Interface
@@ -10,20 +11,20 @@ interface UnifiedWeatherProps {
   // Data sources
   currentData: CurrentWeatherResponse | null;
   forecastData: ForecastResponse | null;
-  
+
   // Loading and error states
   isLoading?: boolean;
   error?: string | null;
-  
+
   // Unit preferences
-  temperatureUnit?: 'celsius' | 'fahrenheit';
-  windSpeedUnit?: 'metric' | 'imperial';
-  timeFormat?: '12hr' | '24hr';
-  pressureUnit?: 'mb' | 'inHg';
-  
+  temperatureUnit?: "celsius" | "fahrenheit";
+  windSpeedUnit?: "metric" | "imperial";
+  timeFormat?: "12hr" | "24hr";
+  pressureUnit?: "mb" | "inHg";
+
   // Forecast configuration
   days?: number;
-  
+
   // Layout options
   compactMode?: boolean;
   showLocationHeader?: boolean;
@@ -33,6 +34,7 @@ interface UnifiedWeatherProps {
 ## Component Structure
 
 ### 1. Forecast Section (Top)
+
 - Displays 5-day weather forecast in a responsive grid
 - Each forecast card shows:
   - Date and day of week
@@ -42,11 +44,13 @@ interface UnifiedWeatherProps {
   - Today's forecast is highlighted with special styling
 
 ### 2. Today Separator
+
 - Visual divider with "Today" label
 - Clear separation between forecast and current weather sections
 - Accessible ARIA labeling
 
 ### 3. Current Weather Section (Bottom)
+
 - Location header (optional)
 - Main weather display with temperature and condition
 - Sun times (sunrise/sunset) when available
@@ -62,16 +66,19 @@ interface UnifiedWeatherProps {
 ## Responsive Design
 
 ### Mobile (≤ 640px)
+
 - Forecast: Horizontal scrollable cards
 - Metrics: 2-column grid
 - Compact spacing and typography
 
 ### Tablet (641px - 1024px)
+
 - Forecast: 2-column grid
 - Metrics: 3-column grid
 - Balanced spacing
 
 ### Desktop (≥ 1025px)
+
 - Forecast: 5-column grid (one column per day)
 - Metrics: 6-column grid (full width utilization)
 - Optimal spacing and typography
@@ -107,6 +114,7 @@ import { UnifiedWeather } from '@/components/UnifiedWeather';
 ## Migration from Separate Components
 
 ### Before
+
 ```typescript
 <CurrentWeather
   data={currentData}
@@ -123,6 +131,7 @@ import { UnifiedWeather } from '@/components/UnifiedWeather';
 ```
 
 ### After
+
 ```typescript
 <UnifiedWeather
   currentData={currentData}
@@ -144,6 +153,7 @@ import { UnifiedWeather } from '@/components/UnifiedWeather';
 ## Testing
 
 Component includes comprehensive test coverage for:
+
 - Loading states
 - Error states
 - Data rendering
@@ -151,6 +161,7 @@ Component includes comprehensive test coverage for:
 - Accessibility features
 
 Run tests with:
+
 ```bash
 npm test UnifiedWeather.test.tsx
 ```

@@ -192,7 +192,7 @@ export interface ForecastData {
 
 ```typescript
 // src/lib/api/schemas.ts
-import { z } from 'zod';
+import { z } from "zod";
 
 export const weatherConditionSchema = z.object({
   text: z.string(),
@@ -261,8 +261,8 @@ export function parseApiResponse<T>(schema: z.ZodSchema<T>, data: unknown): T {
   try {
     return schema.parse(data);
   } catch (error) {
-    console.error('API response validation failed:', error);
-    throw new Error('Invalid API response format');
+    console.error("API response validation failed:", error);
+    throw new Error("Invalid API response format");
   }
 }
 ```
@@ -327,8 +327,8 @@ export const Button: React.FC<ButtonProps> = ({
 
 ```typescript
 // src/contexts/WeatherContext.tsx
-import React, { createContext, useContext, useReducer } from 'react';
-import { WeatherData, ForecastData } from '@/types/weather';
+import React, { createContext, useContext, useReducer } from "react";
+import { WeatherData, ForecastData } from "@/types/weather";
 
 interface WeatherState {
   currentWeather: WeatherData | null;
@@ -339,12 +339,12 @@ interface WeatherState {
 }
 
 type WeatherAction =
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_WEATHER'; payload: WeatherData }
-  | { type: 'SET_FORECAST'; payload: ForecastData }
-  | { type: 'SET_ERROR'; payload: string }
-  | { type: 'ADD_TO_HISTORY'; payload: string }
-  | { type: 'CLEAR_ERROR' };
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_WEATHER"; payload: WeatherData }
+  | { type: "SET_FORECAST"; payload: ForecastData }
+  | { type: "SET_ERROR"; payload: string }
+  | { type: "ADD_TO_HISTORY"; payload: string }
+  | { type: "CLEAR_ERROR" };
 
 interface WeatherContextType {
   state: WeatherState;
@@ -356,7 +356,7 @@ const WeatherContext = createContext<WeatherContextType | undefined>(undefined);
 export const useWeather = () => {
   const context = useContext(WeatherContext);
   if (context === undefined) {
-    throw new Error('useWeather must be used within a WeatherProvider');
+    throw new Error("useWeather must be used within a WeatherProvider");
   }
   return context;
 };
@@ -366,9 +366,9 @@ export const useWeather = () => {
 
 ```typescript
 // src/hooks/useWeather.ts
-import { useState, useEffect } from 'react';
-import { WeatherData, ForecastData } from '@/types/weather';
-import { weatherApi } from '@/lib/api';
+import { useState, useEffect } from "react";
+import { WeatherData, ForecastData } from "@/types/weather";
+import { weatherApi } from "@/lib/api";
 
 interface UseWeatherReturn {
   weather: WeatherData | null;
@@ -396,7 +396,7 @@ interface UseLocalStorageReturn<T> {
 
 export const useLocalStorage = <T>(
   key: string,
-  initialValue: T
+  initialValue: T,
 ): UseLocalStorageReturn<T> => {
   // Implementation...
 };
@@ -406,11 +406,15 @@ export const useLocalStorage = <T>(
 
 ```typescript
 // src/lib/api/weatherApi.ts
-import { WeatherData, ForecastData } from '@/types/weather';
-import { parseApiResponse, weatherDataSchema, forecastDataSchema } from './schemas';
+import { WeatherData, ForecastData } from "@/types/weather";
+import {
+  parseApiResponse,
+  weatherDataSchema,
+  forecastDataSchema,
+} from "./schemas";
 
 export class WeatherApiClient {
-  private baseUrl = 'https://api.weatherapi.com/v1';
+  private baseUrl = "https://api.weatherapi.com/v1";
   private apiKey: string;
 
   constructor(apiKey: string) {
@@ -419,9 +423,9 @@ export class WeatherApiClient {
 
   async getCurrentWeather(location: string): Promise<WeatherData> {
     const response = await fetch(
-      `${this.baseUrl}/current.json?key=${this.apiKey}&q=${encodeURIComponent(location)}`
+      `${this.baseUrl}/current.json?key=${this.apiKey}&q=${encodeURIComponent(location)}`,
     );
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -432,9 +436,9 @@ export class WeatherApiClient {
 
   async getForecast(location: string, days: number = 5): Promise<ForecastData> {
     const response = await fetch(
-      `${this.baseUrl}/forecast.json?key=${this.apiKey}&q=${encodeURIComponent(location)}&days=${days}`
+      `${this.baseUrl}/forecast.json?key=${this.apiKey}&q=${encodeURIComponent(location)}&days=${days}`,
     );
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -451,7 +455,7 @@ export class WeatherApiClient {
 // src/types/utils.ts
 
 // Generic response type for API calls
-export type ApiResponse<T> = 
+export type ApiResponse<T> =
   | { success: true; data: T }
   | { success: false; error: string };
 
@@ -459,8 +463,11 @@ export type ApiResponse<T> =
 export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 // Async function return type
-export type AsyncReturnType<T extends (...args: any) => any> = 
-  T extends (...args: any) => Promise<infer U> ? U : never;
+export type AsyncReturnType<T extends (...args: any) => any> = T extends (
+  ...args: any
+) => Promise<infer U>
+  ? U
+  : never;
 
 // Deep partial type
 export type DeepPartial<T> = {
@@ -491,7 +498,7 @@ describe('WeatherCard', () => {
         location="New York"
       />
     );
-    
+
     expect(screen.getByText('25°C')).toBeInTheDocument();
   });
 
@@ -504,7 +511,7 @@ describe('WeatherCard', () => {
         isLoading={true}
       />
     );
-    
+
     expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
   });
 });
@@ -513,33 +520,38 @@ describe('WeatherCard', () => {
 ## Best Practices
 
 ### 1. Strict Null Checks
+
 - Always enable `strictNullChecks`
 - Use optional chaining (`?.`) and nullish coalescing (`??`)
 - Explicitly handle undefined cases
 
 ### 2. Type Narrowing
+
 ```typescript
 function processWeather(data: WeatherData | null) {
   if (!data) {
     // Handle null case
     return;
   }
-  
+
   // TypeScript knows data is WeatherData here
   console.log(data.location.name);
 }
 ```
 
 ### 3. Avoid Any Type
+
 - Use `unknown` instead of `any` for unknown types
 - Use type guards to narrow unknown types
 - Prefer specific types over generics when possible
 
 ### 4. Utility Types
+
 - Use built-in TypeScript utilities: `Partial`, `Pick`, `Omit`, `Record`
 - Create custom utility types for common patterns
 
 ### 5. API Response Validation
+
 - Always validate API responses with Zod or similar
 - Don't trust external data sources
 - Provide fallbacks for invalid data
@@ -547,33 +559,35 @@ function processWeather(data: WeatherData | null) {
 ## Common Patterns
 
 ### Type Guards
+
 ```typescript
 function isWeatherData(data: unknown): data is WeatherData {
   return (
-    typeof data === 'object' &&
+    typeof data === "object" &&
     data !== null &&
-    'location' in data &&
-    'current' in data
+    "location" in data &&
+    "current" in data
   );
 }
 ```
 
 ### Discriminated Unions
+
 ```typescript
-type ApiResult = 
-  | { status: 'success'; data: WeatherData }
-  | { status: 'loading' }
-  | { status: 'error'; message: string };
+type ApiResult =
+  | { status: "success"; data: WeatherData }
+  | { status: "loading" }
+  | { status: "error"; message: string };
 
 function handleResult(result: ApiResult) {
   switch (result.status) {
-    case 'success':
+    case "success":
       console.log(result.data);
       break;
-    case 'loading':
-      console.log('Loading...');
+    case "loading":
+      console.log("Loading...");
       break;
-    case 'error':
+    case "error":
       console.error(result.message);
       break;
   }
